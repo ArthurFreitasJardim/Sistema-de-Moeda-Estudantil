@@ -6,7 +6,8 @@ const router = Router();
 
 const alunoController = new AlunoController();
 
-router.get('/', alunoController.getById);
+router.get('/', alunoController.getAll);
+router.get('/:id', alunoController.getById);
 router.post('/', alunoController.create);
 router.put('/:id', alunoController.update);
 router.delete('/:id', alunoController.delete);

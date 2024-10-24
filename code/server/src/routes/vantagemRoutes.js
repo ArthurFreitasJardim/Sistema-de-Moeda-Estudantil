@@ -6,7 +6,7 @@ const router = Router();
 
 const vantagemController = new VantagemController();
 
-router.get('/', vantagemController.getById);
+router.get('/:id', vantagemController.getById);
 router.post('/', vantagemController.create);
 router.put('/:id', vantagemController.update);
 router.delete('/:id', vantagemController.delete);

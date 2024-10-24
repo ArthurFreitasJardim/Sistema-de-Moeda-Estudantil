@@ -6,7 +6,7 @@ const router = Router();
 
 const professorController = new ProfessorController();
 
-router.get('/', professorController.getById);
+router.get('/:id', professorController.getById);
 router.post('/', professorController.create);
 router.put('/:id', professorController.update);
 router.delete('/:id', professorController.delete);

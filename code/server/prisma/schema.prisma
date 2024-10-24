@@ -26,6 +26,7 @@ model Aluno {
     rg            String @unique
     endereco      String
     saldo         Int
+
     instituicaoId Int
     usuarioId     Int    @unique
 
@@ -41,6 +42,7 @@ model Transacao {
     tipo        TipoTransaocao
     data        DateTime
     cupom       String
+
     alunoId     Int
     empresaId   Int?
     professorId Int?
@@ -54,6 +56,7 @@ model Professor {
     id            Int    @id @default(autoincrement())
     cpf           String
     saldo         Int
+
     instituicaoId Int
     usuarioId     Int    @unique
 
@@ -67,6 +70,7 @@ model Empresa {
     id        Int    @id @default(autoincrement())
     login     String
     senha     String
+    
     usuarioId Int    @unique
 
     usuario Usuario @relation(fields: [usuarioId], references: [id])

@@ -6,7 +6,7 @@ const router = Router();
 
 const transacaoController = new TransacaoController();
 
-router.get('/', transacaoController.getById);
+router.get('/:id', transacaoController.getById);
 router.post('/', transacaoController.create);
 router.put('/:id', transacaoController.update);
 router.delete('/:id', transacaoController.delete);

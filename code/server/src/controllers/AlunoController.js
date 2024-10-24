@@ -7,6 +7,11 @@ export class AlunoController {
     return res.status(201).json(aluno);
   }
 
+  async getAll(req, res) {
+    const alunos = await AlunoService.getAllAlunos();
+    return res.status(200).json(alunos);
+  }
+
   async getById(req, res) {
     const { id } = req.params;
     const aluno = await AlunoService.getAlunoById(id);
@@ -21,8 +26,8 @@ export class AlunoController {
   }
 
   async delete(req, res) {
-    const { id } = req.params;
-    await AlunoService.deleteAluno(id);
+    const { id } = parseInt(req.params);
+    await AlunoService.deleteUsuario(id);
     return res.status(204).send();
   }
 

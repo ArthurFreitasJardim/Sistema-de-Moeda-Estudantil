@@ -3,30 +3,45 @@ import { prismaClient } from '../database/prismaClient.js';
 class AlunoService {
 
     async createAluno(data) {
-        const usuario = await prismaClientClient.usuario.create({
-            data: {
-                nome: data.nome,
-                login: data.login,
-                senha: data.senha,
-                tipo: 'ALUNO',
-            }
-        });
+        try {
+            console.log(data);
 
-        const aluno = await prismaClientClient.aluno.create({
-            data: {
-                saldo: data.saldo,
-                rg: data.rg,
-                cpf: data.cpf,
-                endereco: data.endereco,
-                usuarioId: usuario.id,
-            }
-        });
+            const aluno = await prismaClient.aluno.create({
+                data: {
+                    saldo: data.saldo,
+                    rg: data.rg,
+                    cpf: data.cpf,
+                    endereco: data.endereco,
+                    email: data.email,
+                    instituicao: {
+                        connect: { id: data.instituicaoId }
+                    },
+                    usuario: {
+                        create: {
+                            nome: data.usuario.nome,
+                            login: data.usuario.login,
+                            senha: data.usuario.senha,
+                            tipo: 'ALUNO',
+                        }
+                    }
+                }
+            });
 
-        return { usuario, aluno };
+            return { aluno };
+        } catch (error) {
+            console.error('Erro ao criar aluno', error);
+            throw new Error('Não foi possível criar o aluno');
+        }
+    }
+
+    async getAllAlunos() {
+        return await prismaClient.aluno.findMany({
+            include: { usuario: true },
+        });
     }
 
     async getAlunoById(id) {
-        return await prismaClient.aluno.findUnique({ 
+        return await prismaClient.aluno.findUnique({
             where: { id },
             include: { usuario: true },
         });
@@ -51,12 +66,39 @@ class AlunoService {
         return aluno;
     }
 
+    async deleteUsuario(id) {
+        // Deleta o aluno e o usuário associado
+        try {
+
+            const usuario = await prismaClient.usuario.findUnique({
+                where: { id },
+            });
+
+            if (!usuario) {
+                throw new Error('Usuário não encontrado');
+            }
+
+            usuario.prismaClient.usuario.delete({
+                where: { id }
+            });
+        } catch (error) {
+            console.error('Erro ao deletar usuario', error);
+            throw new Error('Não foi possível deletar usuario');
+        }
+    }
+
     async deleteAluno(id) {
-        const aluno =  await prismaClient.aluno.delete({ where: { id } });
 
-        await prismaClient.usuario.delete({ where: { id: aluno.usuarioId } });
+        try {
+            const aluno = await prismaClient.aluno.delete({ where: { id } });
 
-        return aluno;
+            await prismaClient.usuario.delete({ where: { id: aluno.usuarioId } });
+
+            return aluno;
+        } catch (error) {
+            console.error('Erro ao deletar aluno', error);
+            throw new Error('Não foi possível deletar aluno');
+        }
     }
 }
 

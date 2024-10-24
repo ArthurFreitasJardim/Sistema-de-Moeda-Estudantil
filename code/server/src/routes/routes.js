@@ -8,13 +8,11 @@ import { VantagemRoutes } from "../routes/vantagemRoutes.js";
 
 const routes = Router();
 
-routes.use('/aluno', AlunoRoutes)
-      .use('/empresa', EmpresaRoutes)
-      .use('/instituicao', InstituicaoRoutes)
-      .use('/professor', ProfessorRoutes)
-      .use('/transacao', TransacaoRoutes)
-      .use('/vantagem', VantagemRoutes);
-
-
+routes.use('/aluno', AlunoRoutes);
+routes.use('/empresa', EmpresaRoutes);
+routes.use('/instituicao', InstituicaoRoutes);
+routes.use('/professor', ProfessorRoutes);
+routes.use('/transacao', TransacaoRoutes);
+routes.use('/vantagem', VantagemRoutes);
 
 export default routes;
