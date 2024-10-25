@@ -36,6 +36,7 @@ CREATE TABLE `Professor` (
     `instituicaoId` INTEGER NOT NULL,
     `usuarioId` INTEGER NOT NULL,
 
+    UNIQUE INDEX `Professor_cpf_key`(`cpf`),
     UNIQUE INDEX `Professor_usuarioId_key`(`usuarioId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -45,8 +46,10 @@ CREATE TABLE `Empresa` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `login` VARCHAR(191) NOT NULL,
     `senha` VARCHAR(191) NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
     `usuarioId` INTEGER NOT NULL,
 
+    UNIQUE INDEX `Empresa_email_key`(`email`),
     UNIQUE INDEX `Empresa_usuarioId_key`(`usuarioId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -66,10 +69,11 @@ CREATE TABLE `Vantagem` (
 CREATE TABLE `Transacao` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `numMoedas` INTEGER NOT NULL,
-    `tipo` ENUM('TROCA', 'ENVIO', 'RECEBIMENTO') NOT NULL,
+    `tipo` ENUM('TROCA', 'ENVIO') NOT NULL,
     `data` DATETIME(3) NOT NULL,
-    `cupom` VARCHAR(191) NOT NULL,
-    `alunoId` INTEGER NOT NULL,
+    `cupom` VARCHAR(191) NULL,
+    `motivo` VARCHAR(191) NULL,
+    `alunoId` INTEGER NULL,
     `empresaId` INTEGER NULL,
     `professorId` INTEGER NULL,
 
@@ -104,7 +108,7 @@ ALTER TABLE `Empresa` ADD CONSTRAINT `Empresa_usuarioId_fkey` FOREIGN KEY (`usua
 ALTER TABLE `Vantagem` ADD CONSTRAINT `Vantagem_empresaId_fkey` FOREIGN KEY (`empresaId`) REFERENCES `Empresa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Transacao` ADD CONSTRAINT `Transacao_alunoId_fkey` FOREIGN KEY (`alunoId`) REFERENCES `Aluno`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Transacao` ADD CONSTRAINT `Transacao_alunoId_fkey` FOREIGN KEY (`alunoId`) REFERENCES `Aluno`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Transacao` ADD CONSTRAINT `Transacao_empresaId_fkey` FOREIGN KEY (`empresaId`) REFERENCES `Empresa`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

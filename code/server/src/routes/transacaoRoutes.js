@@ -6,9 +6,11 @@ const router = Router();
 
 const transacaoController = new TransacaoController();
 
-router.get('/:id', transacaoController.getById);
-router.post('/', transacaoController.create);
-router.put('/:id', transacaoController.update);
-router.delete('/:id', transacaoController.delete);
+router.post('/recarga/:id', transacaoController.recargaProfessor)
+
+// router.get('/:id', transacaoController.getById);
+// router.post('/', transacaoController.create);
+// router.put('/:id', transacaoController.update);
+// router.delete('/:id', transacaoController.delete);
 
 export { router as TransacaoRoutes }

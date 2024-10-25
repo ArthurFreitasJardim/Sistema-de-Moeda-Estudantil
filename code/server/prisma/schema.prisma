@@ -20,15 +20,15 @@ model Usuario {
 }
 
 model Aluno {
-    id            Int    @id @default(autoincrement())
-    email         String @unique
-    cpf           String @unique
-    rg            String @unique
-    endereco      String
-    saldo         Int
+    id       Int    @id @default(autoincrement())
+    email    String @unique
+    cpf      String @unique
+    rg       String @unique
+    endereco String
+    saldo    Int
 
     instituicaoId Int
-    usuarioId     Int    @unique
+    usuarioId     Int @unique
 
     usuario     Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
     instituicao Instituicao @relation(fields: [instituicaoId], references: [id])
@@ -37,12 +37,12 @@ model Aluno {
 }
 
 model Professor {
-    id            Int    @id @default(autoincrement())
-    cpf           String
-    saldo         Int
+    id    Int    @id @default(autoincrement())
+    cpf   String @unique
+    saldo Int
 
     instituicaoId Int
-    usuarioId     Int    @unique
+    usuarioId     Int @unique
 
     usuario     Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
     instituicao Instituicao @relation(fields: [instituicaoId], references: [id])
@@ -51,11 +51,12 @@ model Professor {
 }
 
 model Empresa {
-    id        Int    @id @default(autoincrement())
-    login     String
-    senha     String
-    
-    usuarioId Int    @unique
+    id    Int    @id @default(autoincrement())
+    login String
+    senha String
+    email String @unique
+
+    usuarioId Int @unique
 
     usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
@@ -73,18 +74,20 @@ model Vantagem {
 
     empresa Empresa @relation(fields: [empresaId], references: [id])
 }
-model Transacao {
-    id          Int            @id @default(autoincrement())
-    numMoedas   Int
-    tipo        TipoTransaocao
-    data        DateTime
-    cupom       String
 
-    alunoId     Int
+model Transacao {
+    id        Int            @id @default(autoincrement())
+    numMoedas Int
+    tipo      TipoTransaocao
+    data      DateTime
+    cupom     String?
+    motivo    String?
+
+    alunoId     Int?
     empresaId   Int?
     professorId Int?
 
-    aluno     Aluno      @relation(fields: [alunoId], references: [id])
+    aluno     Aluno?     @relation(fields: [alunoId], references: [id])
     empresa   Empresa?   @relation(fields: [empresaId], references: [id])
     professor Professor? @relation(fields: [professorId], references: [id])
 }
@@ -101,7 +104,6 @@ model Instituicao {
 enum TipoTransaocao {
     TROCA
     ENVIO
-    RECEBIMENTO
 }
 
 enum UsuarioTipo {

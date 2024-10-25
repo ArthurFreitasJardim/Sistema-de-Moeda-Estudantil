@@ -1,43 +1,106 @@
 import ProfessorService from '../services/ProfessorService.js';
 
 export class ProfessorController {
+
+  async getAll(req, res) {
+    try {
+      const professores = await ProfessorService.getAllProfessores();
+      return res.status(200).json(professores);
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível buscar os professores. Tente novamente mais tarde.',
+      });
+    }
+
+  }
+
   async create(req, res) {
-    const data = req.body;
-    const professor = await ProfessorService.createProfessor(data);
-    return res.status(201).json(professor);
+    try {
+      const data = req.body;
+      const professor = await ProfessorService.createProfessor(data);
+      return res.status(201).json(professor);
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível cadastrar o professor. Tente novamente mais tarde.',
+      });
+    }
   }
 
   async getById(req, res) {
-    const { id } = req.params;
-    const professor = await ProfessorService.getProfessorById(id);
-    return res.status(200).json(professor);
+    try {
+      const { id } = req.params;
+      const professor = await ProfessorService.getProfessorById(id);
+      return res.status(200).json(professor);
+    } catch (error) {
+      res.status(400).json({
+        message: `Não foi possível buscar o professor com o ID ${id}.`,
+      });
+    }
   }
 
   async update(req, res) {
-    const { id } = req.params;
-    const data = req.body;
-    const professor = await ProfessorService.updateProfessor(id, data);
-    return res.status(200).json(professor);
+    try {
+      const { id } = req.params;
+      const data = req.body;
+      const professor = await ProfessorService.updateProfessor(id, data);
+      return res.status(200).json(professor);
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível atualizar o professor.',
+      });
+    }
   }
 
   async delete(req, res) {
-    const { id } = req.params;
-    await ProfessorService.deleteProfessor(id);
-    return res.status(204).send();
+    try {
+      const { id } = req.params;
+      await ProfessorService.deleteProfessor(id);
+      return res.status(204).send();
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível excluir o professor.',
+      });
+    }
   }
 
-  async consultarExtrato(req, res) {
-    const { id } = req.params;
-    const extrato = await ProfessorService.consultarExtrato(id);
-    return res.status(200).json(extrato);
+  async recarga(req, res) {
+    try {
+      const { id } = req.params;
+      const { numMoedas } = req.body;
+      const professor = await ProfessorService.enviarMoedasProfessor(id, numMoedas);
+      return res.status(200).json(professor);
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível do professor receber as moedas.',
+      });
+    }
   }
 
   async enviarMoedas(req, res) {
-    const { id } = req.params;  // ID do professor
-    const { alunoId, valor } = req.body;  // Recebe o ID do aluno e o valor a enviar
-    const resultado = await ProfessorService.enviarMoedas(alunoId, valor);
-    return res.status(200).json(resultado);
+    try {
+      const { id } = req.params;
+      const { valor } = req.body;
+      const resultado = await ProfessorService.enviarMoedasProfessor(parseInt(id), parseInt(valor));
+      return res.status(200).json(resultado);
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível debitar as moedas do professor.',
+      });
+    }
   }
+
+  async consultarExtrato(req, res) {
+    try {
+      const { id } = req.params;
+      const extrato = await ProfessorService.consultarExtrato(id);
+      return res.status(200).json(extrato);
+    } catch (error) {
+      res.status(400).json({
+        message: `Não foi possível consultar o extrato do professor com o ID ${id}.`,
+      });
+    }
+  }
+
 }
 
 export default new ProfessorController();

@@ -83,23 +83,30 @@ class AlunoService {
         return aluno;
     }
 
+    async adicionarMoedasAluno(id, valor) {
+        const aluno = await prismaClient.aluno.update({
+            where: { id },
+            data: {
+                saldo: aluno.saldo + valor,
+            },
+        });
+    }
+
+    async removerMoedasAluno(id, valor) {
+        const aluno = await prismaClient.aluno.update({
+            where: { id },
+            data: {
+                saldo: aluno.saldo - valor,
+            },
+        });
+    }
+
     async deleteAluno(alunoId) {
-
         try {
-
-
-
             const id = parseInt(alunoId)
-
-            // console.log('Id: '+id)
-
             const aluno = await this.getAlunoById(id);
 
-            console.log("Aluno: " + aluno)
-
             await prismaClient.usuario.delete({ where: { id: aluno.usuarioId } });
-
-
 
             return aluno;
         } catch (error) {
