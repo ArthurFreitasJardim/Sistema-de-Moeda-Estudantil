@@ -30,26 +30,10 @@ model Aluno {
     instituicaoId Int
     usuarioId     Int    @unique
 
-    usuario     Usuario     @relation(fields: [usuarioId], references: [id])
+    usuario     Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
     instituicao Instituicao @relation(fields: [instituicaoId], references: [id])
 
     transacoes Transacao[]
-}
-
-model Transacao {
-    id          Int            @id @default(autoincrement())
-    numMoedas   Int
-    tipo        TipoTransaocao
-    data        DateTime
-    cupom       String
-
-    alunoId     Int
-    empresaId   Int?
-    professorId Int?
-
-    aluno     Aluno      @relation(fields: [alunoId], references: [id])
-    empresa   Empresa?   @relation(fields: [empresaId], references: [id])
-    professor Professor? @relation(fields: [professorId], references: [id])
 }
 
 model Professor {
@@ -60,7 +44,7 @@ model Professor {
     instituicaoId Int
     usuarioId     Int    @unique
 
-    usuario     Usuario     @relation(fields: [usuarioId], references: [id])
+    usuario     Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
     instituicao Instituicao @relation(fields: [instituicaoId], references: [id])
 
     transacoes Transacao[]
@@ -73,7 +57,7 @@ model Empresa {
     
     usuarioId Int    @unique
 
-    usuario Usuario @relation(fields: [usuarioId], references: [id])
+    usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
     vantagens  Vantagem[]
     transacoes Transacao[]
@@ -88,6 +72,21 @@ model Vantagem {
     empresaId Int
 
     empresa Empresa @relation(fields: [empresaId], references: [id])
+}
+model Transacao {
+    id          Int            @id @default(autoincrement())
+    numMoedas   Int
+    tipo        TipoTransaocao
+    data        DateTime
+    cupom       String
+
+    alunoId     Int
+    empresaId   Int?
+    professorId Int?
+
+    aluno     Aluno      @relation(fields: [alunoId], references: [id])
+    empresa   Empresa?   @relation(fields: [empresaId], references: [id])
+    professor Professor? @relation(fields: [professorId], references: [id])
 }
 
 model Instituicao {

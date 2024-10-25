@@ -1,34 +1,67 @@
 import AlunoService from '../services/AlunoService.js';
 
 export class AlunoController {
-  async create(req, res) {
-    const data = req.body;
-    const aluno = await AlunoService.createAluno(data);
-    return res.status(201).json(aluno);
-  }
 
   async getAll(req, res) {
-    const alunos = await AlunoService.getAllAlunos();
-    return res.status(200).json(alunos);
+    try {
+      const alunos = await AlunoService.getAllAlunos();
+      return res.status(200).json(alunos);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Não foi possível recuperar os alunos. Tente novamente mais tarde.' + error,
+      });
+    }
   }
 
   async getById(req, res) {
-    const { id } = req.params;
-    const aluno = await AlunoService.getAlunoById(id);
-    return res.status(200).json(aluno);
+    try {
+      const { id } = req.params;
+      
+      const aluno = await AlunoService.getAlunoById(parseInt(id));
+      return res.status(200).json(aluno);
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível buscar o aluno '+ id,
+      });
+    }
+  }
+
+  async create(req, res) {
+    try {
+      const data = req.body;
+      const aluno = await AlunoService.createAluno(data);
+      return res.status(201).json(aluno);
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível cadastrar a aluno.',
+      });
+    }
   }
 
   async update(req, res) {
-    const { id } = req.params;
-    const data = req.body;
-    const aluno = await AlunoService.updateAluno(id, data);
-    return res.status(200).json(aluno);
+    try {
+      const { id } = req.params;
+      const data = req.body;
+      const aluno = await AlunoService.updateAluno(parseInt(id), data);
+      return res.status(200).json(aluno);
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível atualizar aluno.',
+      });
+    }
   }
 
   async delete(req, res) {
-    const { id } = parseInt(req.params);
-    await AlunoService.deleteUsuario(id);
-    return res.status(204).send();
+    try {
+      const { id } = req.params;
+      console.log(id)
+      await AlunoService.deleteAluno(id);
+      return res.status(204).send();
+    } catch (error) {
+      res.status(400).json({
+        message: 'Não foi possível excluir aluno.',
+      });
+    }
   }
 
   async consultarExtrato(req, res) {
