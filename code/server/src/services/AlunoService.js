@@ -21,10 +21,6 @@ class AlunoService {
                 include: { usuario: true },
             });
 
-            if (!aluno) {
-                throw new Error('Não possui aluno com o id: ' + id);
-            }
-
             return aluno;
         } catch (error) {
             console.error('Erro ao buscar aluno', error);

@@ -67,7 +67,7 @@ export class ProfessorController {
     try {
       const { id } = req.params;
       const { numMoedas } = req.body;
-      const professor = await ProfessorService.enviarMoedasProfessor(id, numMoedas);
+      const professor = await ProfessorService.recarga(parseInt(id), parseInt(numMoedas));
       return res.status(200).json(professor);
     } catch (error) {
       res.status(400).json({
@@ -76,11 +76,13 @@ export class ProfessorController {
     }
   }
 
-  async enviarMoedas(req, res) {
+  async debitar(req, res) {
     try {
       const { id } = req.params;
-      const { valor } = req.body;
-      const resultado = await ProfessorService.enviarMoedasProfessor(parseInt(id), parseInt(valor));
+      const { numMoedas } = req.body;
+
+      console.log(req.body);
+      const resultado = await ProfessorService.debitar(parseInt(id), parseInt(numMoedas));
       return res.status(200).json(resultado);
     } catch (error) {
       res.status(400).json({

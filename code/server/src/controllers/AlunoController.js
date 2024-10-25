@@ -5,6 +5,11 @@ export class AlunoController {
   async getAll(req, res) {
     try {
       const alunos = await AlunoService.getAllAlunos();
+
+      if (!alunos) {
+        return res.status(404).json({ message: 'Nenhum aluno encontrado.' });
+      }
+
       return res.status(200).json(alunos);
     } catch (error) {
       res.status(500).json({
@@ -16,8 +21,12 @@ export class AlunoController {
   async getById(req, res) {
     try {
       const { id } = req.params;
-      
       const aluno = await AlunoService.getAlunoById(parseInt(id));
+
+      if (!aluno) {
+        return res.status(404).json({ message: 'Aluno não encontrado.' });
+      }
+
       return res.status(200).json(aluno);
     } catch (error) {
       res.status(400).json({
@@ -42,8 +51,15 @@ export class AlunoController {
     try {
       const { id } = req.params;
       const data = req.body;
-      const aluno = await AlunoService.updateAluno(parseInt(id), data);
-      return res.status(200).json(aluno);
+
+      var aluno = await AlunoService.getAlunoById(parseInt(id));
+
+      if (!aluno) {
+        return res.status(404).json({ message: 'Aluno não encontrado.' });
+      }
+
+      const newAluno = await AlunoService.updateAluno(parseInt(id), data);
+      return res.status(200).json(newAluno);
     } catch (error) {
       res.status(400).json({
         message: 'Não foi possível atualizar aluno.',
@@ -54,7 +70,13 @@ export class AlunoController {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      console.log(id)
+      
+      const aluno = await AlunoService.getAlunoById(parseInt(id));
+
+      if (!aluno) {
+        return res.status(404).json({ message: 'Aluno não encontrado.' });
+      }
+
       await AlunoService.deleteAluno(id);
       return res.status(204).send();
     } catch (error) {

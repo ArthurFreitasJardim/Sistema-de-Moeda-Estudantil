@@ -6,7 +6,10 @@ const router = Router();
 
 const transacaoController = new TransacaoController();
 
-router.post('/recarga/:id', transacaoController.recargaProfessor)
+router.post('/recarga/:id', transacaoController.recarga)
+router.post('/envio', transacaoController.envio)
+
+router.put('/enviar', transacaoController.enviarMoedas);
 
 // router.get('/:id', transacaoController.getById);
 // router.post('/', transacaoController.create);

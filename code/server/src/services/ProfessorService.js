@@ -102,7 +102,7 @@ class ProfessorService {
     }
   }
 
-  async removerMoedasProfessor(id, valor) {
+  async debitar(id, valor) {
     try {
       var professor = this.getProfessorById(id);
 
@@ -123,12 +123,12 @@ class ProfessorService {
 
       return professor;
     } catch (error) {
-      throw new Error('Erro ao remover moedas do professor com o ID' + id + ':' + error.message);
+      throw new Error('Erro ao remover moedas do professor com o ID' + id + ':' + error);
     }
 
   }
 
-  async enviarMoedasProfessor(id, valor) {
+  async recarga(id, valor) {
     try {
 
       const professorId = parseInt(id);
@@ -147,7 +147,7 @@ class ProfessorService {
         },
       });
     } catch (error) {
-      throw new Error('Erro ao enviar moedas para o professor com o ID ' + professorId + ': ' + error.message);
+      throw new Error('Erro ao enviar moedas para o professor com o ID ' + professorId + ': ' + error);
     }
   }
 }

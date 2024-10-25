@@ -1,49 +1,10 @@
 import { prismaClient } from '../database/prismaClient.js';
 
 import ProfessorService from '../services/ProfessorService.js';
-
+import AlunoService from '../services/AlunoService.js';
+import EmpresaService from '../services/EmpresaService.js';
 
 class TransacaoService {
-
-  async createTransacao(data) {
-    const transacao = await prismaClient.transacao.create({
-      data: {
-        numMoedas: data.numMoedas,
-        tipo: data.tipo,
-        data: data.data,
-        cupom: data.cupom,
-        alunoId: data.alunoId,
-        professorId: data.professorId,
-      }
-    });
-
-    return transacao;
-  }
-
-  async getTransacaoById(usuarioId) {
-    return prismaClient.transacao.findUnique({
-      where: { id },
-      include: {
-        aluno: true,
-        professor: true,
-      },
-    });
-  }
-
-  async getTransacoes() {
-    return prismaClient.transacao.findMany({
-      include: {
-        aluno: true,
-        professor: true,
-      },
-    });
-  }
-
-  async deleteTransacao(id) {
-    return prismaClient.transacao.delete({
-      where: { id }
-    });
-  }
 
   async transacaoRecarga(id, numMoedas) {
     try {
@@ -76,6 +37,14 @@ class TransacaoService {
 
   async transacaoEnvio(data) {
     try {
+
+      const aluno = await AlunoService.getAlunoById(data.alunoId);
+      const professor = await ProfessorService.getProfessorById(data.professorId);
+
+      if (!aluno || !professor) {
+        throw new Error('Usuario não encontrado.');
+      }
+
       const transacao = prismaClient.transacao.create({
         data: {
           alunoId: data.alunoId,
@@ -113,6 +82,36 @@ class TransacaoService {
       throw new Error('Não foi possível realizar a troca entre aluno e empresa', error);
     }
   }
+
+  async enviarMoedas(data) {
+    return await prismaClient.$transaction(async (prisma) => {
+        // Atualiza o saldo do professor (deduz o valor)
+        const professor = await prisma.professor.update({
+            where: { id: data.professorId },
+            data: { saldo: { decrement: data.numMoedas } },
+        });
+        
+        // Atualiza o saldo do aluno (acrescenta o valor)
+        const aluno = await prisma.aluno.update({
+            where: { id: data.alunoId },
+            data: { saldo: { increment: data.numMoedas } },
+        });
+        
+        // Registra a transação
+        const transacao = await prisma.transacao.create({
+            data: {
+                numMoedas: data.numMoedas,
+                tipo: 'ENVIO',
+                data: new Date(),
+                professorId: data.professorId,
+                alunoId: data.alunoId,
+                motivo: data.motivo,
+            }
+        });
+        
+        return { professor, aluno, transacao };
+    });
+}
 }
 
 export default new TransacaoService();

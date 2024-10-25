@@ -14,6 +14,6 @@ router.delete('/:id', professorController.delete);
 
 //transacao
 router.put('/recarga/:id', professorController.recarga);
-router.put('/enviar/:id', professorController.enviarMoedas);
+router.put('/debitar/:id', professorController.debitar);
 
 export { router as ProfessorRoutes }
