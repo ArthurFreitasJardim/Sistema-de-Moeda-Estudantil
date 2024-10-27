@@ -1,0 +1,106 @@
+const Login = ({ logo, formData = {}, handleChange, loading, onFinish }) => {
+    return (
+        <Container 
+            maxWidth="md" 
+            className="login-container" 
+            sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                height: '100vh', 
+                margin: 0,
+            }}
+        >
+            <Grid container spacing={2} sx={{ height: '100%' }}>
+                <Grid 
+                    item 
+                    xs={12} 
+                    md={6} 
+                    className="login-image-logo-container" 
+                    sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center',
+                        height: '100%', 
+                    }}
+                >
+                    <img 
+                        src={logo} 
+                        alt="Logo PUC Minas" 
+                        style={{ maxWidth: '100%', borderRadius: '16px' }} 
+                    />
+                </Grid>
+                <Grid 
+                    item 
+                    xs={12} 
+                    md={6} 
+                    className="login-form" 
+                    sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        backgroundColor: '#FCFEFF',  
+                        padding: 4,
+                        height: '100%',  
+                    }}
+                >
+                    <Typography variant="h4" gutterBottom>
+                        Login
+                    </Typography>
+
+                    <Box 
+                        component="form" 
+                        onSubmit={(e) => { 
+                            e.preventDefault(); 
+                            onFinish(); 
+                        }}
+                        sx={{ width: '100%' }}
+                    >
+                        <TextField
+                            fullWidth
+                            label="E-mail"
+                            type="email"
+                            margin="normal"
+                            variant="outlined"
+                            value={formData.email || ''}  // Prevenindo erro caso email seja undefined
+                            onChange={(e) => handleChange('email', e.target.value)}
+                            required
+                        />
+                        <TextField
+                            fullWidth
+                            label="Senha"
+                            type="password"
+                            margin="normal"
+                            variant="outlined"
+                            value={formData.senha || ''}  // Prevenindo erro caso senha seja undefined
+                            onChange={(e) => handleChange('senha', e.target.value)}
+                            required
+                        />
+                        <Box mt={2} mb={1}>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="primary"
+                                fullWidth
+                                disabled={loading}
+                                startIcon={loading && <CircularProgress size={20} color="inherit" />}
+                            >
+                                Entrar
+                            </Button>
+                        </Box>
+                        <Typography align="center" variant="body2" color="textSecondary">
+                            Ainda não tem cadastro? <br />
+                            <Link to="/Cadastro" style={{ fontWeight: 'bold', color: '#1976d2', marginLeft: 5 }}>
+                                Cadastre-se
+                            </Link> |
+                            <Link to="/recover-password" style={{ color: '#FF743C', fontWeight: 'bold', marginLeft: 5 }}>
+                                Esqueceu sua senha?
+                            </Link>
+                        </Typography>
+                    </Box>
+                </Grid>
+            </Grid>
+        </Container>
+    );
+};
