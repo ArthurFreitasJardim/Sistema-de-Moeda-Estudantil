@@ -1,0 +1,33 @@
+#partners-container {
+    margin: 2rem;
+}
+
+.header {
+    margin-bottom: 2rem;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    height: 100%;
+    background-color: #fafafa;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.company-image {
+    object-fit: cover;
+    width: 100%;
+    height: 25vh; /* Altura ajustada */
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    padding: rem;
+}
+
+.card-title {
+    text-align: center;
+    font-weight: bold;
+}

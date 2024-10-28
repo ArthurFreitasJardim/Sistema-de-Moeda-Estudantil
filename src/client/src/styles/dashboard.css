@@ -1,0 +1,15 @@
+.app-bar-header {
+    background-color: #FFFF !important;
+    color: black !important;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #333;
+    text-align: center
+}
+
+.user-name, .css-10jnrrx-MuiTypography-root {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
+    font-weight: bolder !important;
+}

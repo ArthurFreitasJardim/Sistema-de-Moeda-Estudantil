@@ -1,0 +1,23 @@
+#redeem-points-container {
+    margin-top: 2rem;
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+}
+
+.product-image {
+    object-fit: cover;
+    width: 100%;
+    height: 200px; /* Ajuste conforme necessário */
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.product-title {
+    text-align: center;
+    font-weight: bold;
+}
