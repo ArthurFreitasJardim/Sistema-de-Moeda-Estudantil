@@ -3,8 +3,11 @@ CREATE TABLE `Usuario` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `nome` VARCHAR(191) NOT NULL,
     `login` VARCHAR(191) NOT NULL,
-    `senha` VARCHAR(191) NOT NULL,
-    `tipo` ENUM('ALUNO', 'PROFESSOR', 'EMPRESA') NOT NULL,
+    `senha` VARCHAR(255) NOT NULL,
+    `senha_salt` VARCHAR(255) NOT NULL,
+    `resetToken` VARCHAR(255) NOT NULL DEFAULT '',
+    `resetTokenExpiry` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `tipo` ENUM('ALUNO', 'PROFESSOR', 'EMPRESA') NOT NULL DEFAULT 'ALUNO',
 
     UNIQUE INDEX `Usuario_login_key`(`login`),
     PRIMARY KEY (`id`)
@@ -89,17 +92,40 @@ CREATE TABLE `Instituicao` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `Curso` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `nome` VARCHAR(191) NOT NULL,
+    `descricao` VARCHAR(191) NULL,
+    `icon` VARCHAR(191) NULL,
+    `duracao` INTEGER NULL,
+    `creditos` INTEGER NULL,
+    `carga_horaria` INTEGER NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Curso_Aluno` (
+    `cursoId` INTEGER NOT NULL,
+    `alunoId` INTEGER NOT NULL,
+    `periodo` INTEGER NOT NULL,
+
+    INDEX `Curso_Aluno_cursoId_alunoId_idx`(`cursoId`, `alunoId`),
+    PRIMARY KEY (`cursoId`, `alunoId`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `Aluno` ADD CONSTRAINT `Aluno_usuarioId_fkey` FOREIGN KEY (`usuarioId`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Aluno` ADD CONSTRAINT `Aluno_instituicaoId_fkey` FOREIGN KEY (`instituicaoId`) REFERENCES `Instituicao`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Aluno` ADD CONSTRAINT `Aluno_instituicaoId_fkey` FOREIGN KEY (`instituicaoId`) REFERENCES `Instituicao`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Professor` ADD CONSTRAINT `Professor_usuarioId_fkey` FOREIGN KEY (`usuarioId`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Professor` ADD CONSTRAINT `Professor_instituicaoId_fkey` FOREIGN KEY (`instituicaoId`) REFERENCES `Instituicao`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Professor` ADD CONSTRAINT `Professor_instituicaoId_fkey` FOREIGN KEY (`instituicaoId`) REFERENCES `Instituicao`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Empresa` ADD CONSTRAINT `Empresa_usuarioId_fkey` FOREIGN KEY (`usuarioId`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -115,3 +141,9 @@ ALTER TABLE `Transacao` ADD CONSTRAINT `Transacao_empresaId_fkey` FOREIGN KEY (`
 
 -- AddForeignKey
 ALTER TABLE `Transacao` ADD CONSTRAINT `Transacao_professorId_fkey` FOREIGN KEY (`professorId`) REFERENCES `Professor`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Curso_Aluno` ADD CONSTRAINT `Curso_Aluno_cursoId_fkey` FOREIGN KEY (`cursoId`) REFERENCES `Curso`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Curso_Aluno` ADD CONSTRAINT `Curso_Aluno_alunoId_fkey` FOREIGN KEY (`alunoId`) REFERENCES `Aluno`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

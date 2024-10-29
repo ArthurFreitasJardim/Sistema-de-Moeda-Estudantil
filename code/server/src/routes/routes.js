@@ -5,6 +5,7 @@ import { InstituicaoRoutes } from "../routes/instituicaoRoutes.js";
 import { ProfessorRoutes } from "../routes/professorRoutes.js";
 import { TransacaoRoutes } from "../routes/transacaoRoutes.js";
 import { VantagemRoutes } from "../routes/vantagemRoutes.js";
+import { CursoRoutes } from "../routes/cursoRoutes.js";
 
 const routes = Router();
 
@@ -14,5 +15,6 @@ routes.use('/instituicao', InstituicaoRoutes);
 routes.use('/professor', ProfessorRoutes);
 routes.use('/transacao', TransacaoRoutes);
 routes.use('/vantagem', VantagemRoutes);
+routes.use('/curso', CursoRoutes);
 
 export default routes;

@@ -1,4 +1,5 @@
 import { prismaClient } from '../database/prismaClient.js';
+import { Util } from '../util/Util.js';
 
 class AlunoService {
 
@@ -30,11 +31,14 @@ class AlunoService {
 
     async createAluno(data) {
         try {
+
             console.log(data);
+
+            const { hash, salt } = Util.encryptPassword(data.senha);
 
             const aluno = await prismaClient.aluno.create({
                 data: {
-                    saldo: data.saldo,
+                    saldo: 0,
                     rg: data.rg,
                     cpf: data.cpf,
                     endereco: data.endereco,
@@ -44,10 +48,10 @@ class AlunoService {
                     },
                     usuario: {
                         create: {
-                            nome: data.usuario.nome,
-                            login: data.usuario.login,
-                            senha: data.usuario.senha,
-                            tipo: 'ALUNO',
+                            nome: data.nome,
+                            login: data.email,
+                            senha: hash,
+                            senha_salt: salt
                         }
                     }
                 }
