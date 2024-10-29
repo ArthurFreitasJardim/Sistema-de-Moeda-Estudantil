@@ -1,12 +1,13 @@
+// src/components/Register.js
+
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import { useState } from 'react';
 import { Container, Grid, Typography, Box, TextField, Button, CircularProgress, MenuItem } from '@mui/material';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo-puc-minas.jpg';
 import '../styles/register.css';
 
-const Register = ({ formData = {}, handleChange, loading, onFinish }) => {
+const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] }) => {
     return (
         <Container 
             maxWidth="md"
@@ -48,7 +49,7 @@ const Register = ({ formData = {}, handleChange, loading, onFinish }) => {
                         }}
                         sx={{ width: '100%' }}
                     >
-                        <Grid container spacing={1} sx ={{paddingLeft: '2rem', paddingRight: '2rem'}}>
+                        <Grid container spacing={1} sx={{ paddingLeft: '2rem', paddingRight: '2rem' }}>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
@@ -131,8 +132,11 @@ const Register = ({ formData = {}, handleChange, loading, onFinish }) => {
                                     onChange={(e) => handleChange('curso', e.target.value)}
                                     required
                                 >
-                                    <MenuItem value="Engenharia de Software">Engenharia de Software</MenuItem>
-                                    <MenuItem value="Outro Curso">Outro Curso</MenuItem>
+                                    {cursos.map((curso) => (
+                                        <MenuItem key={curso.id} value={curso.nome}>
+                                            {curso.nome}
+                                        </MenuItem>
+                                    ))}
                                 </TextField>
                             </Grid>
                             <Grid item xs={12}>
@@ -148,7 +152,7 @@ const Register = ({ formData = {}, handleChange, loading, onFinish }) => {
                                 />
                             </Grid>
                         </Grid>
-                        <Box mt={2} mb={1} style={{padding: '2rem'}}>
+                        <Box mt={2} mb={1} style={{ padding: '2rem' }}>
                             <Button
                                 type="submit"
                                 variant="contained"
