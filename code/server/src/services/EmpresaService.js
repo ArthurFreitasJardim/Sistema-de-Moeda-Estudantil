@@ -1,21 +1,44 @@
 import { prismaClient } from '../database/prismaClient.js';
+import { Util } from '../util/Util.js';
 
 class EmpresaService {
+
+  async getAllEmpresas(){
+    return prismaClient.empresa.findMany({
+      include: { usuario: true },
+    });
+  }
+
   async createEmpresa(data) {
-    // Cria o usuário genérico na tabela Usuario
+
+    if (!data.nome ||!data.login ||!data.senha ||!data.email) {
+      throw new Error('Os dados obrigatórios (nome, login, senha, email) não foram preenchidos.');
+    }
+    const login = data.login;
+    const loginExiste = await prismaClient.usuario.findUnique({
+      where: { login: login },
+    });
+
+    if (loginExiste) {
+      throw new Error('Este login já está em uso.');
+    }
+
+    const { hash, salt } = Util.encryptPassword(data.senha);
+
     const usuario = await prismaClient.usuario.create({
       data: {
         nome: data.nome,
         login: data.login,
-        senha: data.senha,
+        senha: hash,
+        senha_salt: salt,
         tipo: 'EMPRESA',
       }
     });
 
-    // Cria os dados específicos de empresa e vincula ao usuário
     const empresa = await prismaClient.empresa.create({
       data: {
         usuarioId: usuario.id,
+        email: data.email,
       }
     });
 
@@ -30,7 +53,6 @@ class EmpresaService {
   }
 
   async updateEmpresa(id, data) {
-    // Atualiza os dados da empresa e, se necessário, do usuário
     const empresa = await prismaClient.empresa.update({
       where: { id },
       data: {}
@@ -47,7 +69,6 @@ class EmpresaService {
   }
 
   async deleteEmpresa(id) {
-    // Deleta a empresa e o usuário associado
     const empresa = await prismaClient.empresa.delete({
       where: { id }
     });

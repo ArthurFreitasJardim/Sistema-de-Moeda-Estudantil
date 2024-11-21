@@ -9,7 +9,7 @@ export class InstituicaoController {
 
   async getById(req, res) {
     const { id } = req.params;
-    const instituicao = await InstituicaoService.getInstituicaoById(id);
+    const instituicao = await InstituicaoService.getInstituicaoById(parseInt(id));
     return res.status(200).json(instituicao);
   }
 

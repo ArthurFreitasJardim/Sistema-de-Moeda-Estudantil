@@ -7,9 +7,7 @@ export class TransacaoController {
 
   async recarga(req, res) {
     try {
-      const { id } = req.params;
-      const { numMoedas } = req.body;
-      const transacao = await TransacaoService.transacaoRecarga(parseInt(id), parseInt(numMoedas));
+      const transacao = await TransacaoService.recarga(req.body);
       return res.status(200).json(transacao);
     } catch (error) {
       res.status(400).json({
@@ -20,8 +18,10 @@ export class TransacaoController {
 
   async envio(req, res) {
     try {
+      
       const data = req.body;
-      const transacao = await TransacaoService.transacaoEnvio(data);
+      console.log(data.numMoedas)
+      const transacao = await TransacaoService.enviar(data);
       return res.status(200).json(transacao);
     } catch (error) {
       res.status(400).json({
@@ -30,23 +30,36 @@ export class TransacaoController {
     }
   }
 
-  async enviarMoedas(req, res) {
-    const data = req.body;
-
-    const professor = await ProfessorService.getProfessorById(data.professorId);
-    const aluno = await AlunoService.getAlunoById(data.alunoId);
-
-    if (!professor || !aluno) {
-        return res.status(404).json({ message: 'Professor ou aluno não encontrado.' });
-    }
-
+  async troca(req, res) {
     try {
-        const resultado = await TransacaoService.enviarMoedas(data);
-        return res.status(200).json(resultado);
+      const data = req.body;
+      console.log(data.numMoedas);
+      const transacao = await TransacaoService.trocar(data);
+      return res.status(200).json(transacao);
     } catch (error) {
-        res.status(400).json({ message: 'Não foi possível realizar a transação.' });
+      res.status(400).json({
+        message: 'Não foi possível realizar a troca de moedas.',
+      });
     }
-}
+  }
+
+  // async enviarMoedas(req, res) {
+  //   const data = req.body;
+
+  //   const professor = await ProfessorService.getProfessorById(data.professorId);
+  //   const aluno = await AlunoService.getAlunoById(data.alunoId);
+
+  //   if (!professor || !aluno) {
+  //     return res.status(404).json({ message: 'Professor ou aluno não encontrado.' });
+  //   }
+
+  //   try {
+  //     const resultado = await TransacaoService.enviarMoedas(data);
+  //     return res.status(200).json(resultado);
+  //   } catch (error) {
+  //     res.status(400).json({ message: 'Não foi possível realizar a transação.' });
+  //   }
+  // }
 
 }
 

@@ -51,7 +51,8 @@ class AlunoService {
                             nome: data.nome,
                             login: data.email,
                             senha: hash,
-                            senha_salt: salt
+                            senha_salt: salt,
+                            tipo: "ALUNO",
                         }
                     }
                 }

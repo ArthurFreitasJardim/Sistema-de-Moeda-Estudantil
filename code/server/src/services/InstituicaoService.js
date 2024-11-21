@@ -6,7 +6,13 @@ class InstituicaoService {
   }
 
   async getInstituicaoById(id) {
-    return await prismaClient.instituicao.findUnique({ where: { id } });
+    try {
+      return await prismaClient.instituicao.findUnique({ where: { id } });
+    } catch (error) {
+      console.error('Erro ao buscar instituição', error);
+      throw new Error('Não foi possível buscar a instituição');
+    }
+    
   }
 
   async updateInstituicao(id, data) {

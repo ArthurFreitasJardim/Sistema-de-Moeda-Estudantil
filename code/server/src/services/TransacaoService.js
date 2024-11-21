@@ -6,103 +6,111 @@ import EmpresaService from '../services/EmpresaService.js';
 
 class TransacaoService {
 
-  async transacaoRecarga(id, numMoedas) {
+  gerarCupom() {
+    const timestamp = Date.now().toString(36);
+    const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `${timestamp}-${randomStr}`;
+  };
+
+  // async transacaoEnvio(data) {
+  //   try {
+
+  //     const aluno = await AlunoService.getAlunoById(data.alunoId);
+  //     const professor = await ProfessorService.getProfessorById(data.professorId);
+
+  //     if (!aluno || !professor) {
+  //       throw new Error('Usuario não encontrado.');
+  //     }
+
+  //     const transacao = prismaClient.transacao.create({
+  //       data: {
+  //         alunoId: data.alunoId,
+  //         professorId: data.professorId,
+  //         numMoedas: data.numMoedas,
+  //         tipo: "ENVIO",
+  //         cupom: data.cupom,
+  //         motivo: data.motivo,
+  //       }
+  //     })
+
+  //     return transacao;
+  //   } catch (error) {
+  //     console.error('Erro ao enviar moedas do professor ao aluno', error);
+  //     throw new Error('Não foi possível enviar moedas do professor ao aluno', error);
+  //   }
+  // }
+
+  // async transacaoTroca(data) {
+  //   try {
+  //     const transacao = prismaClient.transacao.create({
+  //       data: {
+  //         alunoId: data.alunoId,
+  //         empresaId: data.empresaId,
+  //         numMoedas: data.numMoedas,
+  //         tipo: "TROCA",
+  //       }
+  //     })
+
+  //     return transacao;
+  //   } catch (error) {
+  //     console.error('Erro ao fazer troca entre aluno e empresa', error);
+  //     throw new Error('Não foi possível realizar a troca entre aluno e empresa', error);
+  //   }
+  // }
+
+  async recarga(data) {
     try {
 
-      const professor = await ProfessorService.getProfessorById(id);
+      const id = data.professorId;
+      const professorExiste = await prismaClient.professor.findUnique({
+        where: { id: id },
+      });
 
-      if (!professor) {
+      if (!professorExiste) {
         throw new Error('Professor não encontrado.');
       }
 
-      if (professor.saldo < numMoedas) {
-        throw new Error('Saldo insuficiente para realizar a transação.');
-      }
+      return await prismaClient.$transaction(async () => {
 
-      const transacao = prismaClient.transacao.create({
-        data: {
-          professorId: id,
-          numMoedas: numMoedas,
-          tipo: "ENVIO",
-          data: new Date(),
-        }
-      })
-
-      return transacao;
+        
+        const professor = await prismaClient.professor.update({
+            where: { id: parseInt(data.professorId) },
+            data: { saldo: { increment: parseInt(data.numMoedas) } },
+        });
+        
+        const transacao = await prismaClient.transacao.create({
+            data: {
+                numMoedas: data.numMoedas,
+                tipo: 'RECARGA',
+                professorId: data.professorId,
+            }
+        });
+        
+        return { professor, transacao };
+    });
     } catch (error) {
       console.error('Erro ao enviar moedas do professor ao aluno', error);
       throw new Error('Não foi possível enviar moedas do professor ao aluno', error);
     }
   }
 
-  async transacaoEnvio(data) {
+  async enviar(data) {
     try {
-
-      const aluno = await AlunoService.getAlunoById(data.alunoId);
-      const professor = await ProfessorService.getProfessorById(data.professorId);
-
-      if (!aluno || !professor) {
-        throw new Error('Usuario não encontrado.');
-      }
-
-      const transacao = prismaClient.transacao.create({
-        data: {
-          alunoId: data.alunoId,
-          professorId: data.professorId,
-          numMoedas: data.numMoedas,
-          tipo: "ENVIO",
-          data: new Date(),
-          cupom: data.cupom,
-          motivo: data.motivo,
-        }
-      })
-
-      return transacao;
-    } catch (error) {
-      console.error('Erro ao enviar moedas do professor ao aluno', error);
-      throw new Error('Não foi possível enviar moedas do professor ao aluno', error);
-    }
-  }
-
-  async transacaoTroca(data) {
-    try {
-      const transacao = prismaClient.transacao.create({
-        data: {
-          alunoId: data.alunoId,
-          empresaId: data.empresaId,
-          numMoedas: data.numMoedas,
-          tipo: "TROCA",
-          data: new Date(),
-        }
-      })
-
-      return transacao;
-    } catch (error) {
-      console.error('Erro ao fazer troca entre aluno e empresa', error);
-      throw new Error('Não foi possível realizar a troca entre aluno e empresa', error);
-    }
-  }
-
-  async enviarMoedas(data) {
-    return await prismaClient.$transaction(async (prisma) => {
-        // Atualiza o saldo do professor (deduz o valor)
-        const professor = await prisma.professor.update({
+      return await prismaClient.$transaction(async () => {
+        const professor = await prismaClient.professor.update({
             where: { id: data.professorId },
             data: { saldo: { decrement: data.numMoedas } },
         });
         
-        // Atualiza o saldo do aluno (acrescenta o valor)
-        const aluno = await prisma.aluno.update({
+        const aluno = await prismaClient.aluno.update({
             where: { id: data.alunoId },
             data: { saldo: { increment: data.numMoedas } },
         });
         
-        // Registra a transação
-        const transacao = await prisma.transacao.create({
+        const transacao = await prismaClient.transacao.create({
             data: {
                 numMoedas: data.numMoedas,
                 tipo: 'ENVIO',
-                data: new Date(),
                 professorId: data.professorId,
                 alunoId: data.alunoId,
                 motivo: data.motivo,
@@ -111,7 +119,81 @@ class TransacaoService {
         
         return { professor, aluno, transacao };
     });
-}
+    } catch (error) {
+      console.error('Erro ao realizar a transação', error);
+      throw new Error('Não foi possível realizar a transação', error);
+    }
+    
+  }
+
+  async trocar(data) {
+    try {
+      return await prismaClient.$transaction(async (prisma) => {
+        // Verificar se o aluno existe e tem saldo suficiente
+        const aluno = await prisma.aluno.findUnique({
+          where: { id: data.alunoId },
+          select: { saldo: true },
+        });
+  
+        if (!aluno) {
+          throw new Error('Aluno não encontrado.');
+        }
+
+        console.log(aluno.saldo)
+  
+        if (aluno.saldo < data.numMoedas) {
+          throw new Error('Saldo insuficiente para realizar a troca.');
+        }
+  
+        // Verificar se a vantagem existe
+        const vantagem = await prisma.vantagem.findUnique({
+          where: { id: data.vantagemId },
+        });
+  
+        if (!vantagem) {
+          throw new Error('Vantagem não encontrada.');
+        }
+  
+        // Verificar se a empresa existe
+        const empresa = await prisma.empresa.findUnique({
+          where: { id: data.empresaId },
+        });
+  
+        if (!empresa) {
+          throw new Error('Empresa não encontrada.');
+        }
+  
+        // Atualizar o saldo do aluno e conectar vantagem
+        const alunoAtualizado = await prisma.aluno.update({
+          where: { id: data.alunoId },
+          data: {
+            saldo: { decrement: data.numMoedas },
+            vantagens: {
+              connect: { id: data.vantagemId },
+            },
+          },
+        });
+  
+        // Registrar a transação
+        const transacao = await prisma.transacao.create({
+          data: {
+            numMoedas: data.numMoedas,
+            tipo: 'TROCA',
+            empresaId: data.empresaId,
+            cupom: this.gerarCupom(),
+            alunoId: data.alunoId,
+          },
+        });
+  
+        return { aluno: alunoAtualizado, transacao };
+      });
+    } catch (error) {
+      console.error('Erro na troca de moedas:', error.message);
+      throw new Error(`Erro ao realizar a troca de moedas: ${error.message}`);
+    }
+  }
+  
+
 }
 
 export default new TransacaoService();

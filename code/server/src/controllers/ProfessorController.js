@@ -16,6 +16,7 @@ export class ProfessorController {
 
   async create(req, res) {
     try {
+      console.log(req.body.login);
       const data = req.body;
       const professor = await ProfessorService.createProfessor(data);
       return res.status(201).json(professor);
