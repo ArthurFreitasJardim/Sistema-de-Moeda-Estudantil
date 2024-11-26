@@ -1,6 +1,17 @@
 import InstituicaoService from '../services/InstituicaoService.js';
 
 export class InstituicaoController {
+
+  async getAll(req, res) {
+    try {
+        const instituicoes = await InstituicaoService.getAllInstituicoes();
+        return res.status(200).json(instituicoes);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send('Error interno');
+    }
+  }
+
   async create(req, res) {
     const data = req.body;
     const instituicao = await InstituicaoService.createInstituicao(data);

@@ -6,6 +6,7 @@ const router = Router();
 
 const instituicaoController = new InstituicaoController();
 
+router.get('/', instituicaoController.getAll);
 router.get('/:id', instituicaoController.getById);
 router.post('/', instituicaoController.create);
 router.put('/:id', instituicaoController.update);

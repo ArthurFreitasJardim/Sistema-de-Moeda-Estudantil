@@ -17,6 +17,8 @@ class AlunoService {
 
     async getAlunoById(id) {
         try {
+            console.log(id)
+
             const aluno = await prismaClient.aluno.findUnique({
                 where: { id },
                 include: { usuario: true },
@@ -44,7 +46,7 @@ class AlunoService {
                     endereco: data.endereco,
                     email: data.email,
                     instituicao: {
-                        connect: { id: data.instituicaoId }
+                        connect: { id: data.instituicao }
                     },
                     usuario: {
                         create: {

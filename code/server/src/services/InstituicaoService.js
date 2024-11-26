@@ -1,6 +1,17 @@
 import { prismaClient } from '../database/prismaClient.js';
 
 class InstituicaoService {
+
+  async getAllInstituicoes() {
+    try {
+      return await prismaClient.instituicao.findMany();
+    }catch (error) {
+      console.error('Erro ao buscar instituição', error);
+      throw new Error('Não foi possível buscar a instituição');
+    }
+    
+  }
+
   async createInstituicao(data) {
     return await prismaClient.instituicao.create({ data });
   }
