@@ -96,35 +96,56 @@ class TransacaoService {
 
   async enviar(data) {
     try {
-      return await prismaClient.$transaction(async () => {
-        const professor = await prismaClient.professor.update({
-            where: { id: data.professorId },
-            data: { saldo: { decrement: data.numMoedas } },
+        console.log('Dados recebidos no método enviar:', data);
+
+        const professorId = parseInt(data.professorId, 10);
+        const alunoId = parseInt(data.alunoId, 10);
+        const moedas = parseInt(data.numMoedas, 10);
+
+        // Validações
+        if (isNaN(professorId) || isNaN(alunoId)) {
+            throw new Error('IDs inválidos: Certifique-se de que os IDs do professor e do aluno são números.');
+        }
+        if (isNaN(moedas) || moedas <= 0) {
+            throw new Error('Número de moedas inválido: Deve ser um número maior que zero.');
+        }
+
+        if (!data.motivo || typeof data.motivo !== 'string') {
+            throw new Error('Motivo inválido: O motivo deve ser uma string não vazia.');
+        }
+
+        return await prismaClient.$transaction(async () => {
+            // Atualização do saldo do professor
+            const professor = await prismaClient.professor.update({
+                where: { id: professorId },
+                data: { saldo: { decrement: moedas } },
+            });
+
+            // Atualização do saldo do aluno
+            const aluno = await prismaClient.aluno.update({
+                where: { id: alunoId },
+                data: { saldo: { increment: moedas } },
+            });
+
+            // Criação da transação
+            const transacao = await prismaClient.transacao.create({
+                data: {
+                    numMoedas: moedas,
+                    tipo: 'ENVIO',
+                    professorId,
+                    alunoId,
+                    motivo: data.motivo,
+                },
+            });
+
+            return { professor, aluno, transacao };
         });
-        
-        const aluno = await prismaClient.aluno.update({
-            where: { id: data.alunoId },
-            data: { saldo: { increment: data.numMoedas } },
-        });
-        
-        const transacao = await prismaClient.transacao.create({
-            data: {
-                numMoedas: data.numMoedas,
-                tipo: 'ENVIO',
-                professorId: data.professorId,
-                alunoId: data.alunoId,
-                motivo: data.motivo,
-            }
-        });
-        
-        return { professor, aluno, transacao };
-    });
     } catch (error) {
-      console.error('Erro ao realizar a transação', error);
-      throw new Error('Não foi possível realizar a transação', error);
+        console.error('Erro ao realizar a transação', error);
+        throw new Error('Não foi possível realizar a transação');
     }
-    
-  }
+}
+
 
   async trocar(data) {
     try {

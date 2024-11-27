@@ -105,6 +105,7 @@ class ProfessorService {
     try {
       return await prismaClient.transacao.findMany({
         where: { professorId: id },
+        include: { transacao: true },
       });
     } catch (error) {
       throw new Error('Erro ao consultar o extrato do professor com o ID ' + id + ': ' + error.message);

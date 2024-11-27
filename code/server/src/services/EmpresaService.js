@@ -11,6 +11,8 @@ class EmpresaService {
 
   async createEmpresa(data) {
 
+    console.log(data.nome)
+
     if (!data.nome ||!data.login ||!data.senha ||!data.email) {
       throw new Error('Os dados obrigatórios (nome, login, senha, email) não foram preenchidos.');
     }

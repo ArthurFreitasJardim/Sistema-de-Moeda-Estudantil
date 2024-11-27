@@ -20,7 +20,7 @@ export class TransacaoController {
     try {
       
       const data = req.body;
-      console.log(data.numMoedas)
+      console.log("Num moedas "+data.numMoedas)
       const transacao = await TransacaoService.enviar(data);
       return res.status(200).json(transacao);
     } catch (error) {

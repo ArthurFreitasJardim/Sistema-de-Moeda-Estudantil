@@ -95,7 +95,8 @@ export class ProfessorController {
   async consultarExtrato(req, res) {
     try {
       const { id } = req.params;
-      const extrato = await ProfessorService.consultarExtrato(id);
+      console.log(id);
+      const extrato = await ProfessorService.consultarExtrato(parseInt(id));
       return res.status(200).json(extrato);
     } catch (error) {
       res.status(400).json({
