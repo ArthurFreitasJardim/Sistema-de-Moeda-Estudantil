@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api/aluno';
+const API_URL = 'http://localhost:3000/api/professor';
 
 class AlunoService {
 
@@ -14,14 +14,14 @@ class AlunoService {
     }
   }
 
-  async getAlunoById(id) {
+  async getProfessorById(id) {
     try {
       console.log('ID enviado:', id);
       const response = await axios.get(`${API_URL}/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`Erro aq ao buscar aluno com ID ${id}:`, error);
-      throw new Error('Não foi possível buscar o aluno');
+      console.error(`Erro aq ao buscar professor com ID ${id}:`, error);
+      throw new Error('Não foi possível buscar o professor');
     }
   }
 

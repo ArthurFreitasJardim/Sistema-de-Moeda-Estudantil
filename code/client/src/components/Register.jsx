@@ -1,43 +1,54 @@
-/* eslint-disable react/prop-types */
-import { useState, useEffect } from 'react';
-import { Container, Grid, Typography, Box, TextField, Button, CircularProgress, MenuItem, Snackbar, Alert } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Container, Grid, Typography, Box, TextField, Button, CircularProgress, MenuItem, Select } from '@mui/material';
+import { Link, useNavigate  } from 'react-router-dom';
 import logo from '../assets/logo-puc-minas.jpg';
 import '../styles/register.css';
-import InputMask from 'react-input-mask';
+import { useState, useEffect } from 'react';
+import AlunoService from '../services/AlunoService'; // Certifique-se de que tem o método para registrar
 import InstituicaoService from '../services/InstituicaoService';
+import { useParams } from 'react-router-dom';
 
-const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] }) => {
-    const [instituicoes, setInstituicoes] = useState([]);
-    const [openToast, setOpenToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState('');
-    const navigate = useNavigate(); // Hook para navegação
+const Register = ({ formData = {}, handleChange, cursos = [] }) => {
+
+    const navigate = useNavigate(); // Usando o hook useNavigate no lugar do useHistory
+    const [isLoading, setIsLoading] = useState(false); // Estado de carregamento para o envio
+    const [instituicao, setInstituicao] = useState(null)
+    const [selecionado, setSelecionado] = useState(null)
+    const [errorMessage, setErrorMessage] = useState(null);
+
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setErrorMessage(null);  // Limpa a mensagem de erro
+    
+        try {
+            await AlunoService.createAluno(formData);
+            navigate('/login');
+        } catch (error) {
+            console.error('Erro ao cadastrar aluno', error);
+            setErrorMessage('Erro ao realizar cadastro. Tente novamente.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Enquanto os dados não estiverem carregados, mostra uma tela de loading
+    if (isLoading) {
+        return <Typography>Carregando...</Typography>;
+    }
 
     useEffect(() => {
-        const fetchInstituicoes = async () => {
+        const fetchInstituicao = async () => {
             try {
-                const response = await InstituicaoService.getAllInstituicoes();
-                setInstituicoes(response);
+                const instituicaoData = await InstituicaoService.getAllInstituicao();  // Certifique-se de passar o parâmetro correto
+                setInstituicao(instituicaoData);  // Atualiza o estado com os dados da instituição
             } catch (error) {
-                console.error('Erro ao buscar instituições:', error);
+                console.error('Erro ao buscar instituições', error);
             }
         };
-        fetchInstituicoes();
-    }, []);
-
-    const handleToastClose = () => {
-        setOpenToast(false);
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onFinish();
-        setToastMessage('Cadastro realizado com sucesso!');
-        setOpenToast(true);
-        setTimeout(() => {
-            navigate('/login'); // Redireciona após o sucesso
-        }, 2000); // Espera 2 segundos antes de redirecionar
-    };
+    
+        fetchInstituicao();
+    }, []); // Adicione o array vazio para garantir que o efeito seja executado apenas uma vez
+    
 
     return (
         <Container maxWidth="md" className="register-container">
@@ -45,27 +56,12 @@ const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] 
                 <Grid item xs={12} md={6} className="login-image-logo-container">
                     <img src={logo} alt="Logo PUC Minas" />
                 </Grid>
-                <Grid
-                    item
-                    xs={12}
-                    md={6}
-                    className="register-form"
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                    }}
-                >
+                <Grid item xs={12} md={6} className="register-form" sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                     <Typography variant="h4" className="register-title" gutterBottom>
                         Cadastro
                     </Typography>
 
-                    <Box
-                        component="form"
-                        onSubmit={handleSubmit}
-                        sx={{ width: '100%' }}
-                    >
+                    <Box component="form" onSubmit={handleRegister} sx={{ width: '100%' }}>
                         <Grid container spacing={1} sx={{ paddingLeft: '2rem', paddingRight: '2rem' }}>
                             <Grid item xs={12} sm={6}>
                                 <TextField
@@ -130,7 +126,7 @@ const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] 
                                     required
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            {/* <Grid item xs={12} sm={12}>
                                 <TextField
                                     fullWidth
                                     select
@@ -147,25 +143,26 @@ const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] 
                                         </MenuItem>
                                     ))}
                                 </TextField>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
+                            </Grid> */}
+                            <Grid item xs={12} sm={12}>
                                 <TextField
                                     fullWidth
                                     select
-                                    label="Curso"
+                                    label="Instituição de Ensino"
                                     margin="normal"
                                     variant="outlined"
-                                    value={formData.curso || ''}
-                                    onChange={(e) => handleChange('curso', e.target.value)}
+                                    value={formData.instituicao || ''}
+                                    onChange={(e) => handleChange('instituicao', e.target.value)}
                                     required
                                 >
-                                    {cursos.map((curso) => (
-                                        <MenuItem key={curso.id} value={curso.id}>
-                                            {curso.nome}
+                                    {instituicao && instituicao.map((data) => (
+                                        <MenuItem key={data.id} value={data.id}>
+                                            {data.nome}
                                         </MenuItem>
                                     ))}
                                 </TextField>
                             </Grid>
+
                             <Grid item xs={12}>
                                 <TextField
                                     fullWidth
@@ -185,8 +182,8 @@ const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] 
                                 variant="contained"
                                 color="primary"
                                 fullWidth
-                                disabled={loading}
-                                startIcon={loading && <CircularProgress size={20} color="inherit" />}
+                                disabled={isLoading}
+                                startIcon={isLoading && <CircularProgress size={20} color="inherit" />}
                             >
                                 Registrar
                             </Button>

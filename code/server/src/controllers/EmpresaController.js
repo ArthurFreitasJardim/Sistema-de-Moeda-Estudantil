@@ -3,6 +3,7 @@ import EmpresaService from '../services/EmpresaService.js';
 export class EmpresaController {
   async create(req, res) {
     const data = req.body;
+    console.log(data);
     const empresa = await EmpresaService.createEmpresa(data);
     return res.status(201).json(empresa);
   }
@@ -11,6 +12,11 @@ export class EmpresaController {
     const { id } = req.params;
     const empresa = await EmpresaService.getEmpresaById(id);
     return res.status(200).json(empresa);
+  }
+
+  async getAll(req, res) {
+    const empresas = await EmpresaService.getAllEmpresas();
+    return res.status(200).json(empresas);
   }
 
   async update(req, res) {

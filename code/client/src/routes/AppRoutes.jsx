@@ -18,14 +18,19 @@ const AppRoutes = () => {
     return (
         <Routes>
 
+            <Route path="/" element={<DashboardPage />} />  
+            <Route path="/:id" element={<DashboardPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+
+
             {/* <Route path="/" element={<LandingPage />} /> */}
             
-            <Route path="/register" element={<RegisterPage />} />
+
             <Route path="/login" element={<LoginPage />} />
             <Route path="/reset-password" element={< ResetPasswordPage/>} />
             <Route path="/recover-password" element={< RecoverPasswordPage/>} />
 
-            <Route path="/dashboard" element={<DashboardPage />} />
+
             <Route path="/students" element={<AllStudentsPage />} />
             <Route path="/teachers" element={<AllTeachersPage />} />
             <Route path="/courses" element={<CoursesPage />} />

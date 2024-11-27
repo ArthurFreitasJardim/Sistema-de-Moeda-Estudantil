@@ -17,6 +17,8 @@ class AlunoService {
 
     async getAlunoById(id) {
         try {
+            console.log(id)
+
             const aluno = await prismaClient.aluno.findUnique({
                 where: { id },
                 include: { usuario: true },
@@ -51,7 +53,8 @@ class AlunoService {
                             nome: data.nome,
                             login: data.email,
                             senha: hash,
-                            senha_salt: salt
+                            senha_salt: salt,
+                            tipo: "ALUNO",
                         }
                     }
                 }

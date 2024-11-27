@@ -1,6 +1,17 @@
 import { prismaClient } from '../database/prismaClient.js';
 
 class InstituicaoService {
+
+  async getAllInstituicoes() {
+    try {
+      return await prismaClient.instituicao.findMany();
+    }catch (error) {
+      console.error('Erro ao buscar instituição', error);
+      throw new Error('Não foi possível buscar a instituição');
+    }
+    
+  }
+
   async createInstituicao(data) {
     try {
       if (!data.nome || !data.localizacao) {
@@ -16,21 +27,12 @@ class InstituicaoService {
 
   async getInstituicaoById(id) {
     try {
-      if (!id) {
-        throw new Error('ID não fornecido');
-      }
-
-      const instituicao = await prismaClient.instituicao.findUnique({ where: { id } });
-      
-      if (!instituicao) {
-        throw new Error('Instituição não encontrada');
-      }
-
-      return instituicao;
+      return await prismaClient.instituicao.findUnique({ where: { id } });
     } catch (error) {
-      console.error('Erro ao buscar instituição por ID:', error);
-      throw new Error(`Não foi possível buscar a instituição. Detalhes: ${error.message}`);
+      console.error('Erro ao buscar instituição', error);
+      throw new Error('Não foi possível buscar a instituição');
     }
+    
   }
 
   async updateInstituicao(id, data) {

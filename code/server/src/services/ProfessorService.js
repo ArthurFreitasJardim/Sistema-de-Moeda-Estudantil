@@ -1,4 +1,5 @@
 import { prismaClient } from '../database/prismaClient.js';
+import { Util } from '../util/Util.js';
 
 class ProfessorService {
 
@@ -28,32 +29,40 @@ class ProfessorService {
 
   async createProfessor(data) {
     try {
-
-      console.log(data);
-
+      console.log('Dados recebidos:', data);
+  
+      if (!data.senha) throw new Error('Senha não fornecida.');
+  
+      const { hash, salt } = Util.encryptPassword(data.senha);
+      console.log('Hash gerado:', hash);
+  
       const professor = await prismaClient.professor.create({
         data: {
-          saldo: data.saldo,
+          saldo: 1000,
           cpf: data.cpf,
           instituicao: {
             connect: { id: data.instituicaoId }
           },
           usuario: {
             create: {
-              nome: data.usuario.nome,
-              login: data.usuario.login,
-              senha: data.usuario.senha,
-              tipo: 'ALUNO',
+              nome: data.nome,
+              login: data.login,
+              senha: hash,
+              senha_salt: salt,
+              tipo: 'PROFESSOR',
             }
           }
         }
       });
-
-      return { professor };
+  
+      console.log('Professor criado:', professor);
+      return professor;
     } catch (error) {
+      console.error('Erro no createProfessor:', error.message);
       throw new Error('Erro ao criar o professor: ' + error.message);
     }
   }
+  
 
   async updateProfessor(id, data) {
     try {
@@ -96,6 +105,7 @@ class ProfessorService {
     try {
       return await prismaClient.transacao.findMany({
         where: { professorId: id },
+        include: { transacao: true },
       });
     } catch (error) {
       throw new Error('Erro ao consultar o extrato do professor com o ID ' + id + ': ' + error.message);

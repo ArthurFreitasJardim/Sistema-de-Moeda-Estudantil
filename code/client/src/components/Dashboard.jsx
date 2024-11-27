@@ -5,118 +5,49 @@ import StarIcon from '@mui/icons-material/Star'; // Ícone para metas
 import AssignmentIcon from '@mui/icons-material/Assignment'; // Ícone para desafios
 import { Box, Typography, List, ListItem, ListItemText, Grid, Button } from '@mui/material';
 import VerticalAppBar from '../components/VerticalAppBar';
-
-// Exemplo de dados
-const transacoes = [
-    {
-        id: 1,
-        tipo: "Crédito",
-        data: "2024-10-20",
-        valor: 500.00,
-        descricao: "Depósito de bolsa de estudos",
-        icon: <CreditCardIcon sx={{ color: 'green', mr: 1 }} /> // Ícone de entrada
-    },
-    {
-        id: 2,
-        tipo: "Débito",
-        data: "2024-10-22",
-        valor: 150.00,
-        descricao: "Compra de materiais escolares",
-        icon: <AttachMoneyIcon sx={{ color: 'red', mr: 1 }} /> // Ícone de saída
-    },
-    {
-        id: 3,
-        tipo: "Débito",
-        data: "2024-10-24",
-        valor: 200.00,
-        descricao: "Pagamento de mensalidade",
-        icon: <AttachMoneyIcon sx={{ color: 'red', mr: 1 }} /> // Ícone de saída
-    },
-    {
-        id: 4,
-        tipo: "Crédito",
-        data: "2024-10-25",
-        valor: 300.00,
-        descricao: "Bolsas de incentivo acadêmico",
-        icon: <CreditCardIcon sx={{ color: 'green', mr: 1 }} /> // Ícone de entrada
-    },
-    {
-        id: 5,
-        tipo: "Débito",
-        data: "2024-10-26",
-        valor: 75.00,
-        descricao: "Pagamento de transporte",
-        icon: <AttachMoneyIcon sx={{ color: 'red', mr: 1 }} /> // Ícone de saída
-    }
-];
-
-const metas = [
-    {
-        id: 1,
-        meta: "Viajar nas férias",
-        valorMeta: 1500.00,
-        valorAtual: 800.00,
-        dataLimite: "2024-12-20",
-        icon: <StarIcon sx={{ color: '#FFD700', mr: 1 }} /> // Ícone de meta
-    },
-    {
-        id: 2,
-        meta: "Comprar um novo laptop",
-        valorMeta: 3000.00,
-        valorAtual: 1200.00,
-        dataLimite: "2025-02-15",
-        icon: <StarIcon sx={{ color: '#FFD700', mr: 1 }} /> // Ícone de meta
-    },
-    {
-        id: 3,
-        meta: "Curso de inglês",
-        valorMeta: 600.00,
-        valorAtual: 300.00,
-        dataLimite: "2025-01-10",
-        icon: <StarIcon sx={{ color: '#FFD700', mr: 1 }} /> // Ícone de meta
-    },
-    {
-        id: 4,
-        meta: "Fazer intercâmbio",
-        valorMeta: 5000.00,
-        valorAtual: 1500.00,
-        dataLimite: "2025-07-01",
-        icon: <StarIcon sx={{ color: '#FFD700', mr: 1 }} /> // Ícone de meta
-    }
-];
-
-const desafios = [
-    {
-        id: 1,
-        titulo: "Desafio 30 dias sem gastar",
-        progresso: 75, // 75% do desafio concluído
-        dataLimite: "2024-11-30",
-        recompensa: "R$50 em saldo extra"
-    },
-    {
-        id: 2,
-        titulo: "Economize R$100 esta semana",
-        progresso: 40,
-        dataLimite: "2024-10-31",
-        recompensa: "Desconto em produtos selecionados"
-    },
-    {
-        id: 3,
-        titulo: "Economize para um passeio",
-        progresso: 20,
-        dataLimite: "2025-01-15",
-        recompensa: "Vale-presente"
-    },
-    {
-        id: 4,
-        titulo: "Desafio de 7 dias sem café",
-        progresso: 60,
-        dataLimite: "2024-10-30",
-        recompensa: "R$30 em saldo extra"
-    }
-];
+import { useState, useEffect  } from 'react';
+import axios from "axios";
+import AlunoService from '../services/AlunoService';
+import ProfessorService from '../services/ProfessorService';
+import { useParams } from "react-router-dom";
 
 const Dashboard = () => {
+
+    const { id } = useParams();
+    const [aluno, setAluno] = useState(null);  // Estado para armazenar os dados do aluno
+    const [professor, setProfessor] = useState(null);  // Estado para armazenar os dados do aluno
+    const [loading, setLoading] = useState(true);  // Estado para controle de carregamento
+
+
+    useEffect(() => {
+        // Função para buscar o aluno
+        const fetchAluno = async () => {
+            try {
+                const alunoData = await AlunoService.getAlunoById(id);
+                setAluno(alunoData);  // Atualiza o estado com os dados do aluno
+                setLoading(false);  // Define que o carregamento foi concluído
+            } catch (error) {
+                console.error('Erro ao buscar aluno', error);
+                setLoading(false);  // Caso ocorra erro, ainda define como carregado
+            }
+        };
+
+        fetchAluno();  // Chama a função para buscar o aluno
+    }, [id]);  // Reexecuta quando o ID mudar
+
+    // Enquanto os dados não estiverem carregados, mostra uma tela de loading
+    if (loading) {
+        return <Typography>Carregando...</Typography>;
+    }
+
+    const formatarParaReal = (valor) => {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+        }).format(valor);
+    };
+
+
     return (
         <div>
             <VerticalAppBar />
@@ -131,7 +62,7 @@ const Dashboard = () => {
                     }}
                 >
                     <h1 className='user-name'>
-                        Olá, <span style={{ color: '#1074b4' }}>Wilken Moreira</span>!
+                        Olá, <span style={{ color: '#1074b4' }}>{aluno.usuario.nome}</span>!
                     </h1>
 
                     <Box
@@ -154,7 +85,7 @@ const Dashboard = () => {
                             <Typography variant="h5">Seu Saldo:</Typography>
                         </Box>
                         <Typography variant="h4" sx={{ fontWeight: 'bold', mt: 1 }}>
-                            R$ 1.000,00
+                            {formatarParaReal(aluno.saldo)}
                         </Typography>
                     </Box>
 
@@ -175,7 +106,7 @@ const Dashboard = () => {
                                 <Typography variant="h5" sx={{ mb: 2 }}>
                                     Transações Recentes
                                 </Typography>
-                                <List>
+                                {/* <List>
                                     {transacoes.slice(0, 3).map((transacao) => (
                                         <ListItem key={transacao.id}>
                                             {transacao.icon}
@@ -186,7 +117,7 @@ const Dashboard = () => {
                                             />
                                         </ListItem>
                                     ))}
-                                </List>
+                                </List> */}
                                 <Button variant="outlined" sx={{ margin: 2, color: '#1074b4', borderColor: '#1074b4' }} onClick={() => console.log('Ver mais transações')}>
                                     Ver Mais
                                 </Button>
@@ -207,7 +138,7 @@ const Dashboard = () => {
                                 <Typography variant="h5" sx={{ mb: 2 }}>
                                     Metas de Economia
                                 </Typography>
-                                <List>
+                                {/* <List>
                                     {metas.slice(0, 3).map((meta) => (
                                         <ListItem key={meta.id}>
                                             {meta.icon}
@@ -218,7 +149,7 @@ const Dashboard = () => {
                                             />
                                         </ListItem>
                                     ))}
-                                </List>
+                                </List> */}
                                 <Button variant="outlined" sx={{ margin: 2, color: '#1074b4', borderColor: '#1074b4' }} onClick={() => console.log('Ver mais metas')}>
                                     Ver Mais
                                 </Button>
@@ -239,7 +170,7 @@ const Dashboard = () => {
                                 <Typography variant="h5" sx={{ mb: 2 }}>
                                     Desafios
                                 </Typography>
-                                <List>
+                                {/* <List>
                                     {desafios.slice(0, 3).map((desafio) => (
                                         <ListItem key={desafio.id}>
                                             <AssignmentIcon sx={{ color: '#ff9800', mr: 1 }} />
@@ -250,7 +181,7 @@ const Dashboard = () => {
                                             />
                                         </ListItem>
                                     ))}
-                                </List>
+                                </List> */}
                                 <Button variant="outlined" sx={{ marginTop: '-0.7rem', marginLeft: 2 , color: '#1074b4', borderColor: '#1074b4' }} onClick={() => console.log('Ver mais desafios')}>
                                     Ver Mais
                                 </Button>

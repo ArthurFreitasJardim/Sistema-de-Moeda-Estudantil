@@ -21,16 +21,17 @@ export class AlunoController {
   async getById(req, res) {
     try {
       const { id } = req.params;
+
       const aluno = await AlunoService.getAlunoById(parseInt(id));
 
       if (!aluno) {
         return res.status(404).json({ message: 'Aluno não encontrado.' });
       }
-
+      
       return res.status(200).json(aluno);
     } catch (error) {
       res.status(400).json({
-        message: 'Não foi possível buscar o aluno '+ id,
+        message: `Não foi possível jj buscar o aluno ${id}`,
       });
     }
   }

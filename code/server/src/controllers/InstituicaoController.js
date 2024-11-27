@@ -1,6 +1,17 @@
 import InstituicaoService from '../services/InstituicaoService.js';
 
 export class InstituicaoController {
+
+  async getAll(req, res) {
+    try {
+        const instituicoes = await InstituicaoService.getAllInstituicoes();
+        return res.status(200).json(instituicoes);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send('Error interno');
+    }
+  }
+
   async create(req, res) {
     try {
       const data = req.body;
@@ -13,24 +24,9 @@ export class InstituicaoController {
   }
 
   async getById(req, res) {
-    try {
-      const { id } = req.params;
-      const instituicao = await InstituicaoService.getInstituicaoById(id);
-      return res.status(200).json(instituicao);
-    } catch (error) {
-      console.error('Erro ao buscar instituição por ID:', error);
-      return res.status(500).json({ message: `Não foi possível buscar a instituição. Detalhes: ${error.message}` });
-    }
-  }
-
-  async getAllInstituicoes(req, res) {
-    try {
-      const instituicoes = await InstituicaoService.getAllInstituicoes();
-      return res.status(200).json(instituicoes);
-    } catch (error) {
-      console.error('Erro ao buscar instituições:', error);
-      return res.status(500).json({ message: `Não foi possível buscar as instituições. Detalhes: ${error.message}` });
-    }
+    const { id } = req.params;
+    const instituicao = await InstituicaoService.getInstituicaoById(parseInt(id));
+    return res.status(200).json(instituicao);
   }
 
   async update(req, res) {

@@ -1,135 +1,139 @@
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 model Usuario {
-    id              Int         @id @default(autoincrement())
-    nome            String
-    login           String      @unique
-    senha           String      @db.VarChar(255)
-    senha_salt      String      @db.VarChar(255)
-    resetToken      String      @default("") @db.VarChar(255)
-    resetTokenExpiry DateTime   @default(now())
-    tipo            UsuarioTipo @default(ALUNO)
+  id               Int         @id @default(autoincrement())
+  nome             String
+  login            String      @unique
+  senha            String      @db.VarChar(255)
+  senha_salt       String?      @db.VarChar(255)
+  resetToken       String?      @default("") @db.VarChar(255)
+  resetTokenExpiry DateTime?    @default(now())
+  tipo             UsuarioTipo 
 
-    aluno           Aluno?
-    professor       Professor?
-    empresa         Empresa?
+  aluno     Aluno?
+  professor Professor?
+  empresa   Empresa?
 }
 
 model Aluno {
-    id             Int          @id @default(autoincrement())
-    email          String       @unique
-    cpf            String       @unique
-    rg             String       @unique
-    endereco       String
-    saldo          Int
-    instituicaoId  Int
-    usuarioId      Int          @unique
+  id            Int    @id @default(autoincrement())
+  email         String @unique
+  cpf           String @unique
+  rg            String @unique
+  endereco      String
+  saldo         Int
 
-    usuario        Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-    instituicao    Instituicao  @relation(fields: [instituicaoId], references: [id], onDelete: Cascade)
+  instituicaoId Int
+  usuarioId     Int    @unique
 
-    transacoes     Transacao[]
-    cursos         Curso_Aluno[]
+  usuario     Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  instituicao Instituicao @relation(fields: [instituicaoId], references: [id], onDelete: Cascade)
+
+  vantagens  Vantagem[]
+  transacoes Transacao[]
+  cursos     Curso_Aluno[]
 }
 
 model Professor {
-    id             Int          @id @default(autoincrement())
-    cpf            String       @unique
-    saldo          Int
-    instituicaoId  Int
-    usuarioId      Int          @unique
+  id            Int    @id @default(autoincrement())
+  cpf           String @unique
+  saldo         Int
 
-    usuario        Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-    instituicao    Instituicao  @relation(fields: [instituicaoId], references: [id], onDelete: Cascade)
+  instituicaoId Int
+  usuarioId     Int    @unique
 
-    transacoes     Transacao[]
+  usuario     Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  instituicao Instituicao @relation(fields: [instituicaoId], references: [id], onDelete: Cascade)
+
+  transacoes Transacao[]
 }
 
 model Empresa {
-    id             Int          @id @default(autoincrement())
-    login          String
-    senha          String
-    email          String       @unique
-    usuarioId      Int          @unique
+  id        Int    @id @default(autoincrement())
+  email     String @unique
 
-    usuario        Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId Int    @unique
 
-    vantagens      Vantagem[]
-    transacoes     Transacao[]
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  vantagens  Vantagem[]
+  transacoes Transacao[]
 }
 
 model Vantagem {
-    id             Int          @id @default(autoincrement())
-    descricao      String
-    foto           String
-    preco          Int
-    empresaId      Int
+  id        Int    @id @default(autoincrement())
+  descricao String
+  foto      String
+  preco     Int
+  empresaId Int
 
-    empresa        Empresa      @relation(fields: [empresaId], references: [id])
+  empresa Empresa @relation(fields: [empresaId], references: [id])
+  alunos   Aluno[]
 }
 
 model Transacao {
-    id             Int             @id @default(autoincrement())
-    numMoedas      Int
-    tipo           TipoTransacao
-    data           DateTime
-    cupom          String?
-    motivo         String?
+  id        Int           @id @default(autoincrement())
+  numMoedas Int
+  tipo      TipoTransacao
+  data      DateTime      @default(now())
+  cupom     String?       @unique
+  motivo    String?
 
-    alunoId        Int?
-    empresaId      Int?
-    professorId    Int?
+  alunoId     Int?
+  empresaId   Int?
+  professorId Int?
 
-    aluno          Aluno?         @relation(fields: [alunoId], references: [id], onDelete: SetNull)
-    empresa        Empresa?       @relation(fields: [empresaId], references: [id], onDelete: SetNull)
-    professor      Professor?     @relation(fields: [professorId], references: [id], onDelete: SetNull)
+  aluno     Aluno?     @relation(fields: [alunoId], references: [id], onDelete: SetNull)
+  empresa   Empresa?   @relation(fields: [empresaId], references: [id], onDelete: SetNull)
+  professor Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
 }
 
 model Instituicao {
     id             Int          @id @default(autoincrement())
     nome           String
 
-    alunos         Aluno[]
-    professores    Professor[]
+  alunos      Aluno[]
+  professores Professor[]
 }
 
 enum TipoTransacao {
-    TROCA
-    ENVIO
+  TROCA
+  ENVIO
+  RECARGA
 }
 
 enum UsuarioTipo {
-    ALUNO
-    PROFESSOR
-    EMPRESA
+  ALUNO
+  PROFESSOR
+  EMPRESA
 }
 
 model Curso {
-    id             Int          @id @default(autoincrement())
-    nome           String
-    descricao      String?
-    icon           String?
-    duracao        Int?
-    creditos       Int?
-    cargaHoraria   Int?         @map("carga_horaria")
+  id           Int     @id @default(autoincrement())
+  nome         String
+  descricao    String?
+  icon         String?
+  duracao      Int?
+  creditos     Int?
+  cargaHoraria Int?    @map("carga_horaria")
 
-    cursoAluno     Curso_Aluno[]
+  cursoAluno Curso_Aluno[]
 }
 
 model Curso_Aluno {
-    curso          Curso        @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-    cursoId        Int
-    aluno          Aluno        @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-    alunoId        Int
-    periodo        Int
+  curso   Curso @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  cursoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  alunoId Int
+  periodo Int
 
-    @@id([cursoId, alunoId])
-    @@index([cursoId, alunoId])
+  @@id([cursoId, alunoId])
+  @@index([cursoId, alunoId])
 }

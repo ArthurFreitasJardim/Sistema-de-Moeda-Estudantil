@@ -1,6 +1,14 @@
 import { prismaClient } from '../database/prismaClient.js';
 
 class VantagemService {
+  async getAllVantagens(){
+    return prismaClient.vantagem.findMany({
+      include: {
+        empresa: true,
+      }
+    });
+  }
+
   async createVantagem(data) {
     const vantagem = await prismaClient.vantagem.create({
       data: {

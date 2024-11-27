@@ -4,10 +4,10 @@ CREATE TABLE `Usuario` (
     `nome` VARCHAR(191) NOT NULL,
     `login` VARCHAR(191) NOT NULL,
     `senha` VARCHAR(255) NOT NULL,
-    `senha_salt` VARCHAR(255) NOT NULL,
-    `resetToken` VARCHAR(255) NOT NULL DEFAULT '',
-    `resetTokenExpiry` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `tipo` ENUM('ALUNO', 'PROFESSOR', 'EMPRESA') NOT NULL DEFAULT 'ALUNO',
+    `senha_salt` VARCHAR(255) NULL,
+    `resetToken` VARCHAR(255) NULL DEFAULT '',
+    `resetTokenExpiry` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `tipo` ENUM('ALUNO', 'PROFESSOR', 'EMPRESA') NOT NULL,
 
     UNIQUE INDEX `Usuario_login_key`(`login`),
     PRIMARY KEY (`id`)
@@ -47,11 +47,13 @@ CREATE TABLE `Professor` (
 -- CreateTable
 CREATE TABLE `Empresa` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `nome` VARCHAR(191) NOT NULL,
     `login` VARCHAR(191) NOT NULL,
     `senha` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
     `usuarioId` INTEGER NOT NULL,
 
+    UNIQUE INDEX `Empresa_login_key`(`login`),
     UNIQUE INDEX `Empresa_email_key`(`email`),
     UNIQUE INDEX `Empresa_usuarioId_key`(`usuarioId`),
     PRIMARY KEY (`id`)
@@ -73,13 +75,14 @@ CREATE TABLE `Transacao` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `numMoedas` INTEGER NOT NULL,
     `tipo` ENUM('TROCA', 'ENVIO') NOT NULL,
-    `data` DATETIME(3) NOT NULL,
+    `data` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `cupom` VARCHAR(191) NULL,
     `motivo` VARCHAR(191) NULL,
     `alunoId` INTEGER NULL,
     `empresaId` INTEGER NULL,
     `professorId` INTEGER NULL,
 
+    UNIQUE INDEX `Transacao_cupom_key`(`cupom`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -115,6 +118,15 @@ CREATE TABLE `Curso_Aluno` (
     PRIMARY KEY (`cursoId`, `alunoId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `_AlunoToVantagem` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_AlunoToVantagem_AB_unique`(`A`, `B`),
+    INDEX `_AlunoToVantagem_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `Aluno` ADD CONSTRAINT `Aluno_usuarioId_fkey` FOREIGN KEY (`usuarioId`) REFERENCES `Usuario`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -147,3 +159,9 @@ ALTER TABLE `Curso_Aluno` ADD CONSTRAINT `Curso_Aluno_cursoId_fkey` FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE `Curso_Aluno` ADD CONSTRAINT `Curso_Aluno_alunoId_fkey` FOREIGN KEY (`alunoId`) REFERENCES `Aluno`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_AlunoToVantagem` ADD CONSTRAINT `_AlunoToVantagem_A_fkey` FOREIGN KEY (`A`) REFERENCES `Aluno`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_AlunoToVantagem` ADD CONSTRAINT `_AlunoToVantagem_B_fkey` FOREIGN KEY (`B`) REFERENCES `Vantagem`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
