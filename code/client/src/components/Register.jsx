@@ -1,29 +1,49 @@
-// src/components/Register.js
-
 /* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
-import { Container, Grid, Typography, Box, TextField, Button, CircularProgress, MenuItem } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Container, Grid, Typography, Box, TextField, Button, CircularProgress, MenuItem, Snackbar, Alert } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo-puc-minas.jpg';
 import '../styles/register.css';
+import InputMask from 'react-input-mask';
+import InstituicaoService from '../services/InstituicaoService';
 
 const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] }) => {
+    const [instituicoes, setInstituicoes] = useState([]);
+    const [openToast, setOpenToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const navigate = useNavigate(); // Hook para navegação
+
+    useEffect(() => {
+        const fetchInstituicoes = async () => {
+            try {
+                const response = await InstituicaoService.getAllInstituicoes();
+                setInstituicoes(response);
+            } catch (error) {
+                console.error('Erro ao buscar instituições:', error);
+            }
+        };
+        fetchInstituicoes();
+    }, []);
+
+    const handleToastClose = () => {
+        setOpenToast(false);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onFinish();
+        setToastMessage('Cadastro realizado com sucesso!');
+        setOpenToast(true);
+        setTimeout(() => {
+            navigate('/login'); // Redireciona após o sucesso
+        }, 2000); // Espera 2 segundos antes de redirecionar
+    };
+
     return (
-        <Container 
-            maxWidth="md"
-            className="register-container"
-        >
+        <Container maxWidth="md" className="register-container">
             <Grid container spacing={2} style={{ height: '85vh' }}>
-                <Grid
-                    item
-                    xs={12}
-                    md={6}
-                    className="login-image-logo-container"
-                >
-                    <img
-                        src={logo}
-                        alt="Logo PUC Minas"
-                    />
+                <Grid item xs={12} md={6} className="login-image-logo-container">
+                    <img src={logo} alt="Logo PUC Minas" />
                 </Grid>
                 <Grid
                     item
@@ -43,10 +63,7 @@ const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] 
 
                     <Box
                         component="form"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            onFinish();
-                        }}
+                        onSubmit={handleSubmit}
                         sx={{ width: '100%' }}
                     >
                         <Grid container spacing={1} sx={{ paddingLeft: '2rem', paddingRight: '2rem' }}>
@@ -74,15 +91,22 @@ const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] 
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="CPF"
-                                    margin="normal"
-                                    variant="outlined"
+                                <InputMask
+                                    mask="999.999.999-99"
                                     value={formData.cpf || ''}
                                     onChange={(e) => handleChange('cpf', e.target.value)}
-                                    required
-                                />
+                                >
+                                    {(inputProps) => (
+                                        <TextField
+                                            {...inputProps}
+                                            fullWidth
+                                            label="CPF"
+                                            margin="normal"
+                                            variant="outlined"
+                                            required
+                                        />
+                                    )}
+                                </InputMask>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
@@ -117,8 +141,11 @@ const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] 
                                     onChange={(e) => handleChange('instituicao', e.target.value)}
                                     required
                                 >
-                                    <MenuItem value="PUC Minas">PUC Minas</MenuItem>
-                                    <MenuItem value="Outra">Outra</MenuItem>
+                                    {instituicoes.map((instituicao) => (
+                                        <MenuItem key={instituicao.id} value={instituicao.id}>
+                                            {instituicao.nome}
+                                        </MenuItem>
+                                    ))}
                                 </TextField>
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -133,7 +160,7 @@ const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] 
                                     required
                                 >
                                     {cursos.map((curso) => (
-                                        <MenuItem key={curso.id} value={curso.nome}>
+                                        <MenuItem key={curso.id} value={curso.id}>
                                             {curso.nome}
                                         </MenuItem>
                                     ))}
@@ -173,6 +200,17 @@ const Register = ({ formData = {}, handleChange, loading, onFinish, cursos = [] 
                     </Box>
                 </Grid>
             </Grid>
+
+            <Snackbar
+                open={openToast}
+                autoHideDuration={6000}
+                onClose={handleToastClose}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert onClose={handleToastClose} severity="success" sx={{ width: '100%' }}>
+                    {toastMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

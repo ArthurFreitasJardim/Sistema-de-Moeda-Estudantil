@@ -95,7 +95,6 @@ model Transacao {
 model Instituicao {
     id             Int          @id @default(autoincrement())
     nome           String
-    endereco       String
 
     alunos         Aluno[]
     professores    Professor[]

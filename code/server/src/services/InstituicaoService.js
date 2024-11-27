@@ -2,26 +2,93 @@ import { prismaClient } from '../database/prismaClient.js';
 
 class InstituicaoService {
   async createInstituicao(data) {
-    return await prismaClient.instituicao.create({ data });
+    try {
+      if (!data.nome || !data.localizacao) {
+        throw new Error('Nome e localização são obrigatórios para criar uma instituição');
+      }
+      
+      return await prismaClient.instituicao.create({ data });
+    } catch (error) {
+      console.error('Erro ao criar instituição:', error);
+      throw new Error(`Não foi possível criar a instituição. Detalhes: ${error.message}`);
+    }
   }
 
   async getInstituicaoById(id) {
-    return await prismaClient.instituicao.findUnique({ where: { id } });
+    try {
+      if (!id) {
+        throw new Error('ID não fornecido');
+      }
+
+      const instituicao = await prismaClient.instituicao.findUnique({ where: { id } });
+      
+      if (!instituicao) {
+        throw new Error('Instituição não encontrada');
+      }
+
+      return instituicao;
+    } catch (error) {
+      console.error('Erro ao buscar instituição por ID:', error);
+      throw new Error(`Não foi possível buscar a instituição. Detalhes: ${error.message}`);
+    }
   }
 
   async updateInstituicao(id, data) {
-    return await prismaClient.instituicao.update({
-      where: { id },
-      data,
-    });
+    try {
+      if (!id) {
+        throw new Error('ID não fornecido');
+      }
+      if (!data.nome && !data.localizacao) {
+        throw new Error('Dados para atualização não fornecidos');
+      }
+
+      const instituicao = await prismaClient.instituicao.update({
+        where: { id },
+        data,
+      });
+
+      return instituicao;
+    } catch (error) {
+      console.error('Erro ao atualizar instituição:', error);
+      throw new Error(`Não foi possível atualizar a instituição. Detalhes: ${error.message}`);
+    }
   }
 
   async deleteInstituicao(id) {
-    return await prismaClient.instituicao.delete({ where: { id } });
+    try {
+      if (!id) {
+        throw new Error('ID não fornecido');
+      }
+
+      const instituicao = await prismaClient.instituicao.delete({ where: { id } });
+
+      return instituicao;
+    } catch (error) {
+      console.error('Erro ao deletar instituição:', error);
+      throw new Error(`Não foi possível deletar a instituição. Detalhes: ${error.message}`);
+    }
   }
 
   async cadastrarProfessor(professorData) {
-    return await prismaClient.professor.create({ data: professorData });
+    try {
+      if (!professorData.nome || !professorData.email) {
+        throw new Error('Nome e email são obrigatórios para cadastrar um professor');
+      }
+
+      return await prismaClient.professor.create({ data: professorData });
+    } catch (error) {
+      console.error('Erro ao cadastrar professor:', error);
+      throw new Error(`Não foi possível cadastrar o professor. Detalhes: ${error.message}`);
+    }
+  }
+
+  async getAllInstituicoes() {
+    try {
+      return await prismaClient.instituicao.findMany();
+    } catch (error) {
+      console.error('Erro ao buscar instituições:', error);
+      throw new Error(`Não foi possível buscar instituições. Detalhes: ${error.message}`);
+    }
   }
 }
 

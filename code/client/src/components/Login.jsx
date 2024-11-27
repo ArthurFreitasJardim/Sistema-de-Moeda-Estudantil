@@ -82,7 +82,7 @@ const Login = ({ logo, loading, onFinish }) => {
                         </Box>
                         <Typography align="center" variant="body2" color="textSecondary" className='login-redirect-options'>
                             Ainda não tem cadastro? <br />
-                            <Link to="/Cadastro" style={{ fontWeight: 'bold', color: '#1976d2', marginLeft: 5 }}>
+                            <Link to="/register" style={{ fontWeight: 'bold', color: '#1976d2', marginLeft: 5 }}>
                                 Cadastre-se
                             </Link> |
                             <Link to="/recover-password" style={{ color: '#FF743C', fontWeight: 'bold', marginLeft: 5 }}>

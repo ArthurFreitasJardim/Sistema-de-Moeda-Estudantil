@@ -1,14 +1,14 @@
 import { Router } from "express";
-
 import { InstituicaoController } from "../controllers/InstituicaoController.js";
 
 const router = Router();
 
 const instituicaoController = new InstituicaoController();
 
+router.get('/', instituicaoController.getAllInstituicoes);
 router.get('/:id', instituicaoController.getById);
 router.post('/', instituicaoController.create);
 router.put('/:id', instituicaoController.update);
 router.delete('/:id', instituicaoController.delete);
 
-export { router as InstituicaoRoutes }
+export { router as InstituicaoRoutes };

@@ -44,7 +44,7 @@ class AlunoService {
                     endereco: data.endereco,
                     email: data.email,
                     instituicao: {
-                        connect: { id: data.instituicaoId }
+                        connect: { id: data.instituicao }
                     },
                     usuario: {
                         create: {
