@@ -1,65 +1,64 @@
-import { Container, Grid, Typography, Box, TextField, Button, CircularProgress, MenuItem, Select } from '@mui/material';
+import { Container, Grid, Typography, Box, TextField, Button, CircularProgress, MenuItem } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo-puc-minas.jpg';
 import '../styles/register.css';
 import { useState, useEffect } from 'react';
 import InputMask from 'react-input-mask';
 import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert'; // Importando o componente Alert
-import AlunoService from '../services/AlunoService';
+import MuiAlert from '@mui/material/Alert';
 import InstituicaoService from '../services/InstituicaoService';
-import { useParams } from 'react-router-dom';
+import ProfessorService from '../services/ProfessorService';
 
-const Register = ({ formData = {}, handleChange, cursos = [] }) => {
+const RegisterProfessor = ({ formData = {}, handleChange }) => {
 
-    const navigate = useNavigate(); // Usando o hook useNavigate no lugar do useHistory
-    const [isLoading, setIsLoading] = useState(false); // Estado de carregamento para o envio
-    const [instituicao, setInstituicao] = useState(null);
-    const [selecionado, setSelecionado] = useState(null);
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+    const [instituicoes, setInstituicoes] = useState([]);  // Mudado para um array
     const [errorMessage, setErrorMessage] = useState(null);
 
-    // Estado para o Snackbar
     const [openToast, setOpenToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
 
     const handleRegister = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        setErrorMessage(null);  // Limpa a mensagem de erro
-    
+        setErrorMessage(null);
+
+        console.log('Form data before submit:', formData);
+
         try {
-            await AlunoService.createAluno(formData);
-            setToastMessage('Cadastro realizado com sucesso!');
-            setOpenToast(true); // Abre o Snackbar de sucesso
+            await ProfessorService.createProfessor(formData);
+            setToastMessage('Cadastro de professor realizado com sucesso!');
+            setOpenToast(true);
             navigate('/login');
         } catch (error) {
-            console.error('Erro ao cadastrar aluno', error);
+            console.error('Erro ao cadastrar professor', error);
             setToastMessage('Erro ao realizar cadastro. Tente novamente.');
-            setOpenToast(true); // Abre o Snackbar de erro
+            setOpenToast(true);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Enquanto os dados não estiverem carregados, mostra uma tela de loading
     if (isLoading) {
         return <Typography>Carregando...</Typography>;
     }
 
     useEffect(() => {
-        const fetchInstituicao = async () => {
+        const fetchInstituicoes = async () => {
             try {
-                const instituicaoData = await InstituicaoService.getAllInstituicao();  // Certifique-se de passar o parâmetro correto
-                setInstituicao(instituicaoData);  // Atualiza o estado com os dados da instituição
+                const instituicoesData = await InstituicaoService.getAllInstituicao();
+                console.log("Instituições recebidas:", instituicoesData)
+                setInstituicoes(instituicoesData);  
             } catch (error) {
                 console.error('Erro ao buscar instituições', error);
             }
         };
-    
-        fetchInstituicao();
-    }, []); // Adicione o array vazio para garantir que o efeito seja executado apenas uma vez
 
-    // Função para fechar o Snackbar
+        fetchInstituicoes();
+    }, []);
+
+
     const handleToastClose = () => {
         setOpenToast(false);
     };
@@ -72,7 +71,7 @@ const Register = ({ formData = {}, handleChange, cursos = [] }) => {
                 </Grid>
                 <Grid item xs={12} md={6} className="register-form" sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                     <Typography variant="h4" className="register-title" gutterBottom>
-                        Cadastro
+                        Cadastro de Professor
                     </Typography>
 
                     <Box component="form" onSubmit={handleRegister} sx={{ width: '100%' }}>
@@ -91,12 +90,12 @@ const Register = ({ formData = {}, handleChange, cursos = [] }) => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="E-mail"
+                                    label="E-mail (Login)"
                                     type="email"
                                     margin="normal"
                                     variant="outlined"
-                                    value={formData.email || ''}
-                                    onChange={(e) => handleChange('email', e.target.value)}
+                                    value={formData.login || ''}
+                                    onChange={(e) => handleChange('login', e.target.value)}
                                     required
                                 />
                             </Grid>
@@ -121,22 +120,12 @@ const Register = ({ formData = {}, handleChange, cursos = [] }) => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="RG"
+                                    label="Senha"
+                                    type="password"
                                     margin="normal"
                                     variant="outlined"
-                                    value={formData.rg || ''}
-                                    onChange={(e) => handleChange('rg', e.target.value)}
-                                    required
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Endereço"
-                                    margin="normal"
-                                    variant="outlined"
-                                    value={formData.endereco || ''}
-                                    onChange={(e) => handleChange('endereco', e.target.value)}
+                                    value={formData.senha || ''}
+                                    onChange={(e) => handleChange('senha', e.target.value)}
                                     required
                                 />
                             </Grid>
@@ -151,25 +140,12 @@ const Register = ({ formData = {}, handleChange, cursos = [] }) => {
                                     onChange={(e) => handleChange('instituicao', e.target.value)}
                                     required
                                 >
-                                    {instituicao && instituicao.map((data) => (
-                                        <MenuItem key={data.id} value={data.id}>
-                                            {data.nome}
+                                    {instituicoes && instituicoes.map((instituicao) => (
+                                        <MenuItem key={instituicao.id} value={instituicao.id}>
+                                            {instituicao.nome}
                                         </MenuItem>
                                     ))}
                                 </TextField>
-                            </Grid>
-
-                            <Grid item xs={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Senha"
-                                    type="password"
-                                    margin="normal"
-                                    variant="outlined"
-                                    value={formData.senha || ''}
-                                    onChange={(e) => handleChange('senha', e.target.value)}
-                                    required
-                                />
                             </Grid>
                         </Grid>
                         <Box mt={2} mb={1} style={{ padding: '2rem' }}>
@@ -207,4 +183,4 @@ const Register = ({ formData = {}, handleChange, cursos = [] }) => {
     );
 };
 
-export default Register;
+export default RegisterProfessor;

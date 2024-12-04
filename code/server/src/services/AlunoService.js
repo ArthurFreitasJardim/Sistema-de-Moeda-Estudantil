@@ -17,10 +17,11 @@ class AlunoService {
 
     async getAlunoById(id) {
         try {
-            console.log(id)
+            const alunoId = parseInt(id);
+            if (isNaN(alunoId)) throw new Error('ID inválido');
 
             const aluno = await prismaClient.aluno.findUnique({
-                where: { id },
+                where: { id: alunoId },
                 include: { usuario: true },
             });
 
@@ -33,8 +34,9 @@ class AlunoService {
 
     async createAluno(data) {
         try {
-
-            console.log(data);
+            if (!data || !data.email || !data.senha || !data.rg || !data.cpf || !data.endereco || !data.instituicao || !data.nome) {
+                throw new Error('Dados obrigatórios estão ausentes');
+            }
 
             const { hash, salt } = Util.encryptPassword(data.senha);
 
@@ -46,7 +48,7 @@ class AlunoService {
                     endereco: data.endereco,
                     email: data.email,
                     instituicao: {
-                        connect: { id: data.instituicao }
+                        connect: { id: parseInt(data.instituicao) },
                     },
                     usuario: {
                         create: {
@@ -55,12 +57,12 @@ class AlunoService {
                             senha: hash,
                             senha_salt: salt,
                             tipo: "ALUNO",
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             });
 
-            return { aluno };
+            return aluno;
         } catch (error) {
             console.error('Erro ao criar aluno', error);
             throw new Error('Não foi possível criar o aluno');
@@ -68,46 +70,91 @@ class AlunoService {
     }
 
     async updateAluno(id, data) {
-        const aluno = await prismaClient.aluno.update({
-            where: { id },
-            data: {
-                saldo: data.saldo,
-                cpf: data.cpf,
-            },
-        });
+        try {
+            const alunoId = parseInt(id);
+            if (isNaN(alunoId)) throw new Error('ID inválido');
 
-        if (data.usuario) {
-            await prismaClient.usuario.update({
-                where: { id: aluno.usuarioId },
-                data: data.usuario
+            const aluno = await prismaClient.aluno.update({
+                where: { id: alunoId },
+                data: {
+                    saldo: data.saldo,
+                    cpf: data.cpf,
+                },
             });
-        }
 
-        return aluno;
+            if (data.usuario) {
+                await prismaClient.usuario.update({
+                    where: { id: aluno.usuarioId },
+                    data: data.usuario,
+                });
+            }
+
+            return aluno;
+        } catch (error) {
+            console.error('Erro ao atualizar aluno', error);
+            throw new Error('Não foi possível atualizar o aluno');
+        }
     }
 
     async adicionarMoedasAluno(id, valor) {
-        const aluno = await prismaClient.aluno.update({
-            where: { id },
-            data: {
-                saldo: aluno.saldo + valor,
-            },
-        });
+        try {
+            const alunoId = parseInt(id);
+            if (isNaN(alunoId)) throw new Error('ID inválido');
+
+            const aluno = await prismaClient.aluno.findUnique({
+                where: { id: alunoId },
+            });
+
+            if (!aluno) throw new Error('Aluno não encontrado');
+
+            const updatedAluno = await prismaClient.aluno.update({
+                where: { id: alunoId },
+                data: {
+                    saldo: aluno.saldo + valor,
+                },
+            });
+
+            return updatedAluno;
+        } catch (error) {
+            console.error('Erro ao adicionar moedas', error);
+            throw new Error('Não foi possível adicionar moedas');
+        }
     }
 
     async removerMoedasAluno(id, valor) {
-        const aluno = await prismaClient.aluno.update({
-            where: { id },
-            data: {
-                saldo: aluno.saldo - valor,
-            },
-        });
+        try {
+            const alunoId = parseInt(id);
+            if (isNaN(alunoId)) throw new Error('ID inválido');
+
+            const aluno = await prismaClient.aluno.findUnique({
+                where: { id: alunoId },
+            });
+
+            if (!aluno) throw new Error('Aluno não encontrado');
+
+            if (aluno.saldo < valor) throw new Error('Saldo insuficiente');
+
+            const updatedAluno = await prismaClient.aluno.update({
+                where: { id: alunoId },
+                data: {
+                    saldo: aluno.saldo - valor,
+                },
+            });
+
+            return updatedAluno;
+        } catch (error) {
+            console.error('Erro ao remover moedas', error);
+            throw new Error('Não foi possível remover moedas');
+        }
     }
 
     async deleteAluno(alunoId) {
         try {
-            const id = parseInt(alunoId)
+            const id = parseInt(alunoId);
+            if (isNaN(id)) throw new Error('ID inválido');
+
             const aluno = await this.getAlunoById(id);
+            if (!aluno) throw new Error('Aluno não encontrado');
 
             await prismaClient.usuario.delete({ where: { id: aluno.usuarioId } });
 

@@ -1,30 +1,52 @@
-/* eslint-disable no-unused-vars */
-import  { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DataTableList from '../components/DataTableList';
 import VerticalAppBar from '../components/VerticalAppBar';
 import { Button, IconButton, Tooltip } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AlunoService from '../services/AlunoService'; 
+import { useNavigate } from 'react-router-dom'; 
 
 import '../styles/dataTableList.css'
 
 const AllStudentsPage = () => {
+    const navigate = useNavigate(); 
 
-    const [students, setStudents] = useState([
-        { id: 1, name: 'Ana Silva', course: 'Engenharia de Software', email: 'ana.silva@exemplo.com' },
-        { id: 2, name: 'Bruno Costa', course: 'Ciência da Computação', email: 'bruno.costa@exemplo.com' },
-        { id: 3, name: 'Carlos Oliveira', course: 'Sistemas de Informação', email: 'carlos.oliveira@exemplo.com' },
-        { id: 4, name: 'Daniela Souza', course: 'Engenharia de Software', email: 'daniela.souza@exemplo.com' },
-    ]);
+    const [students, setStudents] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const onEdit = () => {
-        console.log('teste');
-    }
+    const fetchStudents = async () => {
+        try {
+            const response = await AlunoService.getAllAlunos();
+            console.log(response)
+            const studentsData = response.map(student => ({
+                id: student.id,
+                name: student.usuario.nome,
+                course: student.curso, 
+                email: student.email, 
+            }));
+            setStudents(studentsData);
+        } catch (error) {
+            console.error('Erro ao carregar alunos:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const onDelete = () => {
-        console.log('teste');
-    }
+
+    useEffect(() => {
+        fetchStudents();
+    }, []);
+
+    const onEdit = (id) => {
+        console.log(`Editar aluno com ID: ${id}`);
+    };
+
+    const onDelete = (id) => {
+        setStudents(students.filter(student => student.id !== id));
+        console.log(`Excluir aluno com ID: ${id}`);
+    };
 
     const columns = [
         { field: 'id', headerName: 'ID', width: 70 },
@@ -58,17 +80,12 @@ const AllStudentsPage = () => {
         },
     ];
 
-    const handleEdit = (id) => {
-        console.log(`Editar professor com ID: ${id}`);
+    const handleAdd = () => {
+        navigate('/register');
     };
 
-    const handleDelete = (id) => {
-        setStudents(students.filter(teacher => teacher.id !== id));
-        console.log(`Excluir professor com ID: ${id}`);
-    };
-
-    const handleAdd= () => {
-        console.log('teste');
+    if (loading) {
+        return <div>Carregando...</div>; 
     }
 
     return (
@@ -77,7 +94,7 @@ const AllStudentsPage = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '30px', paddingRight: '40px' }}>
                 <h1>Lista de Alunos</h1>
                 <Button
-                    sx={{width: '300px', height: '3rem'}}
+                    sx={{ width: '300px', height: '3rem' }}
                     variant="contained"
                     color="primary"
                     startIcon={<PersonAddIcon />}

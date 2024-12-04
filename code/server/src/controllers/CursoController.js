@@ -67,12 +67,20 @@ export class CursoController {
 
   async delete(req, res) {
     try {
-      const { cursoId } = req.body;
-
-      await CursoService.deleteCurso(cursoId);
-      return res.status(204).json({ message: 'Curso deletado com sucesso.' });
+       const { cursoId } = req.params;  // Mudança: Pegando da URL, não do corpo da requisição
+       console.log('Requisição para excluir curso com ID:', cursoId);
+ 
+       if (!cursoId) {
+          console.error('ID do curso não fornecido.');
+          return res.status(400).json({ message: 'ID do curso não fornecido.' });
+       }
+ 
+       await CursoService.deleteCurso(cursoId);
+       return res.status(204).json({ message: 'Curso deletado com sucesso.' });
     } catch (error) {
-      res.status(500).json({ message: 'Erro ao deletar curso.', error: error.message });
+       console.error('Erro ao excluir curso:', error.message);
+       res.status(500).json({ message: 'Erro ao deletar curso.', error: error.message });
     }
-  }
+ }
+
 }

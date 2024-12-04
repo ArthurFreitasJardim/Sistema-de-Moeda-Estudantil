@@ -1,18 +1,15 @@
 import AuthService from '../services/AuthService.js';
 
-export class AuthController {
+export default class AuthController {
 
     async login(req, res) {
         try {
             const { email, senha } = req.body;
-    
             const { usuario, token } = await AuthService.authenticate(email, senha);
     
             if (!usuario || !usuario.id) {
                 return res.status(400).json({ message: 'Usuário ou senha inválidos' });
             }
-    
-            req.session.user = usuario;
     
             return res.status(200).json({
                 message: 'Login realizado com sucesso!',
@@ -20,7 +17,6 @@ export class AuthController {
                     id: usuario.id,
                     email: usuario.email,
                     nome: usuario.nome,
-                    tipo: usuario.tipo
                 },
                 token
             });

@@ -2,35 +2,58 @@ import { prismaClient } from '../database/prismaClient.js';
 import { Util } from '../util/Util.js';
 import jwt from 'jsonwebtoken';
 
-class AuthService {
+export default class AuthService {
     
     static async authenticate(email, senha) {
-        const usuario = await prismaClient.usuario.findUnique({
-            where: { email },
-        });
+        try {
+            console.log('Iniciando autenticação para:', email);
     
-        if (!usuario) {
-            throw new Error('Usuário não encontrado.');
+            const usuario = await prismaClient.usuario.findUnique({
+                where: { login: email },
+            });
+    
+            if (!usuario) {
+                console.log('Usuário não encontrado.');
+                return { success: false, message: 'Usuário não encontrado.' };
+            }
+    
+            console.log('Usuário encontrado:', usuario);
+    
+            const isPasswordValid = Util.verifyPassword(
+                { salt: usuario.senha_salt, hash: usuario.senha },
+                senha
+            );
+            if (!isPasswordValid) {
+                console.log('Senha inválida.');
+                return { success: false, message: 'Senha inválida.' };
+            }
+    
+            const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET, {
+                expiresIn: '1h',
+            });
+    
+            console.log('Token gerado:', token);
+    
+            const usuarioLogado = {
+                id: usuario.id,
+                email: usuario.email,
+                nome: usuario.nome,
+            };
+    
+            console.log('Autenticação concluída:', usuarioLogado);
+    
+            return {
+                success: true,
+                message: 'Autenticação realizada com sucesso.',
+                usuario: usuarioLogado,
+                token: token,
+            };
+        } catch (error) {
+            console.error('Erro durante a autenticação:', error);
+            return { success: false, message: 'Erro no servidor.' };
         }
-    
-        const isPasswordValid = Util.verifyPassword({ salt: usuario.senha_salt, hash: usuario.senha }, senha);
-        if (!isPasswordValid) {
-            throw new Error('Senha inválida.');
-        }
-    
-        const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET, {
-            expiresIn: '1h',
-        });
-    
-        const usuarioSeguro = {
-            id: usuario.id,
-            email: usuario.email,
-            nome: usuario.nome,
-            tipo: usuario.tipo
-        };
-    
-        return { usuario: usuarioSeguro, token };
     }
+    
 
     async requestPasswordReset(req, res) {
         try {
@@ -73,13 +96,11 @@ class AuthService {
                 return res.status(400).json({ success: success, message: message });
             }
     
-            res.status(200).json({ success: success, message: message }); // Código 200 para sucesso
+            res.status(200).json({ success: success, message: message }); 
         } catch (error) {
-            console.error('Erro ao redefinir senha:', error); // Log do erro no servidor
+            console.error('Erro ao redefinir senha:', error); 
             res.status(500).json({ success: false, message: 'Erro durante a redefinição de senha' });
         }
     }
 
 }
-
-export default AuthService;

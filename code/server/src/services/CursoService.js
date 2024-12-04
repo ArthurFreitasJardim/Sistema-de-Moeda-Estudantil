@@ -59,21 +59,22 @@ class CursoService {
   }
 
   async deleteCurso(id) {
+    console.log('ID recebido no serviço:', id); 
     try {
-      const curso = await prismaClient.curso.delete({
-        where: { id: parseInt(id) },
-      });
+        const curso = await prismaClient.curso.delete({
+            where: { id: parseInt(id) },
+        });
 
-      if (!curso) {
-        throw new Error(`Curso com id ${id} não encontrado`);
-      }
+        if (!curso) {
+            throw new Error(`Curso com id ${id} não encontrado`);
+        }
 
-      return curso;
+        return curso;
     } catch (error) {
-      console.error(`Erro ao deletar curso com id ${id}:`, error);
-      throw error;
+        console.error(`Erro ao deletar curso com id ${id}:`, error);
+        throw error;
     }
-  }
+}
 }
 
 export default new CursoService();

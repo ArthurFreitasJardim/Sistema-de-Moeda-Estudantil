@@ -1,20 +1,52 @@
-/* eslint-disable no-unused-vars */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import VerticalAppBar from '../components/VerticalAppBar';
-import { Grid, Paper, Typography, Button } from '@mui/material';
+import { Grid, Paper, Typography, Button, IconButton } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CursoService from '../services/CursoService';
 import '../styles/courses.css';
 
 const CoursesPage = () => {
-    const [cursos, setCursos] = useState([
-        { id: 1, nome: 'Engenharia de Software', descricao: 'Curso de formação em Engenharia de Software.', icon: 'fas fa-laptop-code' },
-        { id: 2, nome: 'Ciência da Computação', descricao: 'Curso voltado para ciência da computação.', icon: 'fas fa-code' },
-        { id: 3, nome: 'Sistemas de Informação', descricao: 'Curso de Sistemas de Informação focado em gestão.', icon: 'fas fa-database' },
-    ]);
+    const navigate = useNavigate();
 
-    const handleAdd= () => {
-        console.log('teste');
-    }
+    const [cursos, setCursos] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    // Função para buscar os cursos
+    const fetchCursos = async () => {
+        setLoading(true);
+        try {
+            const response = await CursoService.getAllCursos();
+            setCursos(response);
+        } catch (error) {
+            console.error('Erro ao carregar cursos:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Função para editar curso
+    const handleEdit = (cursoId) => {
+        console.log(`Editar curso com ID: ${cursoId}`);
+        navigate(`/edit-curso/${cursoId}`);
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            await CursoService.deleteCurso(id);
+            setCursos((prevCursos) => prevCursos.filter((curso) => curso.id !== id));
+            console.log(`Curso com ID ${id} excluído com sucesso.`);
+        } catch (error) {
+            console.error(`Erro ao excluir curso com ID ${id}:`, error.message);
+            alert('Ocorreu um erro ao tentar excluir o curso. Tente novamente mais tarde.');
+        }
+    };
+
+    useEffect(() => {
+        fetchCursos();
+    }, []);
 
     return (
         <div>
@@ -23,48 +55,67 @@ const CoursesPage = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '30px', paddingRight: '40px' }}>
                 <h1>Cursos</h1>
                 <Button
-                    sx={{width: '300px', height: '3rem'}}
+                    sx={{ width: '300px', height: '3rem' }}
                     variant="contained"
                     color="primary"
                     startIcon={<SchoolIcon />}
-                    onClick={handleAdd}
+                    onClick={() => navigate('/register-curso')}
                 >
                     Adicionar Curso
                 </Button>
             </div>
 
             <Grid container spacing={3} id="courses-conteiner">
-                {cursos && cursos.length > 0 ? (
+                {loading ? (
+                    <Typography variant="body1" sx={{ margin: '2rem' }}>
+                        Carregando cursos...
+                    </Typography>
+                ) : cursos && cursos.length > 0 ? (
                     cursos.map((curso) => (
                         <Grid item md={4} key={curso.id}>
-                            <a href={`/curso/${curso.id}`} className="card-link">
-                                <Paper
-                                    elevation={3}
-                                    sx={{
-                                        backgroundColor: '#FAF9F6',
-                                        border: '1px solid #e0e0e0',
-                                        borderRadius: '12px',
-                                        cursor: 'pointer',
-                                        height: '30vh',
-                                        transition: 'transform 0.2s',
-                                        '&:hover': {
-                                            transform: 'scale(1.05)',
-                                        },
-                                    }}
-                                >
-                                    <div className="card-body" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-                                        <Typography variant="h5" className="card-title">
-                                            <i className={curso.icon}></i> {curso.nome}
-                                        </Typography>
-                                        <Typography variant="h6" className="card-subtitle" style={{ marginBottom: '0.5rem' }}>
-                                            Código: {curso.nome.slice(0, 3).toUpperCase() + curso.id}
-                                        </Typography>
-                                        <Typography variant="body2" className="card-text">
-                                            {curso.descricao}
-                                        </Typography>
-                                    </div>
-                                </Paper>
-                            </a>
+                            <Paper
+                                elevation={3}
+                                sx={{
+                                    backgroundColor: '#FAF9F6',
+                                    border: '1px solid #e0e0e0',
+                                    borderRadius: '12px',
+                                    height: '12vh', 
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'space-between',
+                                    padding: '12px', 
+                                    transition: 'transform 0.2s',
+                                    '&:hover': {
+                                        transform: 'scale(1.05)',
+                                    },
+                                }}
+                            >
+                                <div>
+                                    <Typography variant="h6" sx={{ marginBottom: '8px' }}>
+                                        <i className={curso.icon}></i> {curso.nome}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ marginBottom: '8px' }}>
+                                        Código: {curso.nome.slice(0, 3).toUpperCase() + curso.id}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {curso.descricao}
+                                    </Typography>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                    <IconButton
+                                        color="primary"
+                                        onClick={() => handleEdit(curso.id)}
+                                    >
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        color="error"
+                                        onClick={() => handleDelete(curso.id)}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </div>
+                            </Paper>
                         </Grid>
                     ))
                 ) : (

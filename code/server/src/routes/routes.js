@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { AuthRoutes } from "../routes/authRoutes.js";
 import { AlunoRoutes } from "../routes/alunoRoutes.js";
 import { EmpresaRoutes } from "../routes/empresaRoutes.js";
 import { InstituicaoRoutes } from "../routes/instituicaoRoutes.js";
@@ -16,5 +17,6 @@ routes.use('/professor', ProfessorRoutes);
 routes.use('/transacao', TransacaoRoutes);
 routes.use('/vantagem', VantagemRoutes);
 routes.use('/curso', CursoRoutes);
+routes.use('/login', AuthRoutes);
 
 export default routes;

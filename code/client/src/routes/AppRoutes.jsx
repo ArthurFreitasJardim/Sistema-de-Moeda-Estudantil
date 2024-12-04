@@ -11,6 +11,12 @@ import CoursesPage from '../pages/CoursesPage';
 import PartnersPage from '../pages/PartnersPage';
 import AllCouponsPage from '../pages/AllCouponsPage';
 import RedeemPointsPage from '../pages/RedeemPointsPage';
+import Instituicao from '../pages/InstituicaoPage'
+import Dashboard from '../pages/DashboardPage.jsx';
+import LandingPage from '../pages/LandingPage.jsx'
+import RegisterProfessor from '../pages/RegisterProfessorPage.jsx';
+import RegisterCourse from '../pages/RegisterCursoPage.jsx';
+import RegisterEmpresa from '../pages/RegisterEmpresPage.jsx'
 
 //import PrivateRoute from '../components/PrivateRoute';
 
@@ -18,11 +24,16 @@ const AppRoutes = () => {
     return (
         <Routes>
 
-            <Route path="/" element={<DashboardPage />} />  
+            <Route path="/" element={<LandingPage />} />  
             <Route path="/:id" element={<DashboardPage />} />
+            
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register-professor" element={<RegisterProfessor />} />
+            <Route path="/register-curso" element={<RegisterCourse />} />
+            <Route path="/register-empresa" element={<RegisterEmpresa />} />
 
-
+            <Route path="/instituicao" element={<Instituicao />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             {/* <Route path="/" element={<LandingPage />} /> */}
             
 

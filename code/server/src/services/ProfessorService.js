@@ -41,7 +41,7 @@ class ProfessorService {
           saldo: 1000,
           cpf: data.cpf,
           instituicao: {
-            connect: { id: data.instituicaoId }
+            connect: { id: data.instituicao }
           },
           usuario: {
             create: {

@@ -41,14 +41,18 @@ class CursoService {
     }
   }
 
-  async deleteCurso(cursoId) {
+  async deleteCurso(id) {
+    console.log('ID enviado para exclusão:', id); 
     try {
-      await axios.delete(`${API_URL}`, { data: { cursoId } });
-      return { message: 'Curso deletado com sucesso.' };
+        const response = await axios.delete(`${API_URL}/${id}`);
+        console.log('Curso excluído com sucesso:', response.data);
+        return response.data;
     } catch (error) {
-      throw error.response.data || 'Erro ao deletar curso.';
+        console.error('Erro ao excluir curso:', error.response?.data || error.message);
+        throw error.response?.data || 'Erro ao deletar curso.';
     }
-  }
+}
+
 }
 
 export default new CursoService();

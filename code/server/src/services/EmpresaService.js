@@ -13,7 +13,7 @@ class EmpresaService {
 
     console.log(data.nome)
 
-    if (!data.nome ||!data.login ||!data.senha ||!data.email) {
+    if (!data.nome ||!data.senha ||!data.email) {
       throw new Error('Os dados obrigatórios (nome, login, senha, email) não foram preenchidos.');
     }
     const login = data.login;

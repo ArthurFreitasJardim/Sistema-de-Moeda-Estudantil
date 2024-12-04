@@ -1,6 +1,6 @@
 import InstituicaoService from '../services/InstituicaoService.js';
 
-export class InstituicaoController {
+export default class InstituicaoController {
 
   async getAll(req, res) {
     try {
@@ -63,5 +63,3 @@ export class InstituicaoController {
     }
   }
 }
-
-export default new InstituicaoController();

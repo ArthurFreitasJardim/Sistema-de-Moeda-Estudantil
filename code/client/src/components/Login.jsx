@@ -5,13 +5,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import '../styles/login.css';
 
-const Login = ({ logo, loading, onFinish }) => {
-    const [formData, setFormData] = useState({ email: '', senha: '' });
-
-    const handleChange = (field, value) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-    };
-
+const Login = ({ logo, formData, loading, handleChange, onFinish }) => {
     return (
         <Container
             maxWidth="md"
@@ -39,11 +33,10 @@ const Login = ({ logo, loading, onFinish }) => {
                         component="form"
                         onSubmit={(e) => {
                             e.preventDefault();
-                            onFinish(formData);
+                            onFinish();
                         }}
                         sx={{ width: '100%', padding: '5rem' }}
                     >
-
                         <Typography variant="h4" gutterBottom className='login-title'>
                             Login
                         </Typography>
@@ -95,5 +88,6 @@ const Login = ({ logo, loading, onFinish }) => {
         </Container>
     );
 };
+
 
 export default Login;

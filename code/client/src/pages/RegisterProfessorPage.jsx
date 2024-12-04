@@ -1,12 +1,13 @@
-// src/pages/CadastroPage.js
+// src/pages/CadastroProfessorPage.js
 
 import { useState, useEffect } from 'react';
-import Register from '../components/Register';
+import Register from '../components/RegisterProfessor';
 import logo from '../assets/logo-puc-minas.jpg';
-import AlunoService from '../services/AlunoService';
+import ProfessorService from '../services/ProfessorService';
 import CursoService from '../services/CursoService';
+import InstituicaoService from '../services/InstituicaoService';
 
-const RegisterPage = () => {
+const CadastroProfessorPage = () => {
     
     const [formData, setFormData] = useState({
         nome: '',
@@ -21,6 +22,7 @@ const RegisterPage = () => {
 
     const [loading, setLoading] = useState(false);
     const [cursos, setCursos] = useState([]);
+    const [instituicoes, setInstituicoes] = useState([]);
 
     const handleChange = (field, value) => {
         setFormData({
@@ -31,14 +33,14 @@ const RegisterPage = () => {
 
     const onFinish = async (e) => {
         e?.preventDefault();
-        console.log('Cadastro enviado com:', formData);
+        console.log('Cadastro de professor enviado com:', formData);
         setLoading(true);
 
         try {
-            const aluno = await AlunoService.createAluno(formData);
-            console.log('Aluno criado com sucesso:', aluno);
+            const professor = await ProfessorService.createProfessor(formData);
+            console.log('Professor cadastrado com sucesso:', professor);
         } catch (error) {
-            console.error('Erro ao criar aluno:', error);
+            console.error('Erro ao criar professor:', error);
         } finally {
             setLoading(false);
         }
@@ -54,7 +56,17 @@ const RegisterPage = () => {
             }
         };
 
+        const fetchInstituicoes = async () => {
+            try {
+                const instituicoesData = await InstituicaoService.getAllInstituicoes();
+                setInstituicoes(instituicoesData);
+            } catch (error) {
+                console.error('Erro ao buscar instituições:', error);
+            }
+        };
+
         fetchCursos();
+        fetchInstituicoes();
     }, []);
 
     return (
@@ -65,8 +77,9 @@ const RegisterPage = () => {
             loading={loading}
             onFinish={onFinish}
             cursos={cursos}
+            instituicoes={instituicoes}
         />
     );
 };
 
-export default RegisterPage;
+export default CadastroProfessorPage;

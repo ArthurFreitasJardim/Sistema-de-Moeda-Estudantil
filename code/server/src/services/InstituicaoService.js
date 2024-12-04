@@ -14,8 +14,8 @@ class InstituicaoService {
 
   async createInstituicao(data) {
     try {
-      if (!data.nome || !data.localizacao) {
-        throw new Error('Nome e localização são obrigatórios para criar uma instituição');
+      if (!data.nome) {
+        throw new Error('Nome é obrigatório para criar uma instituição');
       }
       
       return await prismaClient.instituicao.create({ data });

@@ -1,25 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DataTableList from '../components/DataTableList';
 import VerticalAppBar from '../components/VerticalAppBar';
 import { Button, IconButton, Tooltip } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-
+import ProfessorService from '../services/ProfessorService'; 
+import { useNavigate } from 'react-router-dom'; 
 
 const AllTeachersPage = () => {
-    const [teachers, setTeachers] = useState([
-        { id: 1, name: 'Dr. João Mendes', course: 'Engenharia de Software', email: 'joao.mendes@exemplo.com' },
-        { id: 2, name: 'Profa. Maria Souza', course: 'Ciência da Computação', email: 'maria.souza@exemplo.com' },
-        { id: 3, name: 'Prof. Carlos Silva', course: 'Sistemas de Informação', email: 'carlos.silva@exemplo.com' },
-        { id: 4, name: 'Profa. Daniela Reis', course: 'Matemática', email: 'daniela.reis@exemplo.com' },
-    ]);
+    const navigate = useNavigate(); 
 
+    const [teachers, setTeachers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchTeachers = async () => {
+        try {
+            const response = await ProfessorService.getAllProfessores();
+            const professorsData = response.map(professor => ({
+                id: professor.id,
+                name: professor.usuario.nome,
+                course: professor.instituicaoId,
+                email: professor.usuario.login
+            }));
+            setTeachers(professorsData);
+        } catch (error) {
+            console.error('Erro ao carregar professores:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchTeachers();
+    }, []);
 
     const columns = [
         { field: 'id', headerName: 'ID', width: 70 },
         { field: 'name', headerName: 'Nome', flex: 1 },
-        { field: 'course', headerName: 'Curso', flex: 1 },
+        { field: 'course', headerName: 'Instituição', flex: 1 },
         { field: 'email', headerName: 'Email', flex: 2 },
         {
             field: 'actions',
@@ -57,8 +76,12 @@ const AllTeachersPage = () => {
         console.log(`Excluir professor com ID: ${id}`);
     };
 
-    const handleAdd= () => {
-        console.log('teste');
+    const handleAdd = () => {
+        navigate('/register-professor');
+    };
+
+    if (loading) {
+        return <div>Carregando...</div>; 
     }
 
     return (
@@ -67,7 +90,7 @@ const AllTeachersPage = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '30px', paddingRight: '40px' }}>
                 <h1>Lista de Professores</h1>
                 <Button
-                    sx={{width: '300px', height: '3rem'}}
+                    sx={{ width: '300px', height: '3rem' }}
                     variant="contained"
                     color="primary"
                     startIcon={<PersonAddIcon />}

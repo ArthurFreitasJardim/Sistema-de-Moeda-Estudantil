@@ -96,11 +96,11 @@ model Transacao {
 }
 
 model Instituicao {
-    id             Int          @id @default(autoincrement())
-    nome           String
+  id             Int          @id @default(autoincrement())
+  nome           String
 
-  alunos      Aluno[]
-  professores Professor[]
+  alunos         Aluno[]
+  professores    Professor[]
 }
 
 enum TipoTransacao {

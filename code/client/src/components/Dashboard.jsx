@@ -1,26 +1,25 @@
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import CreditCardIcon from '@mui/icons-material/CreditCard'; // Ícone para entrada (Crédito)
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney'; // Ícone para saída (Débito)
-import StarIcon from '@mui/icons-material/Star'; // Ícone para metas
-import AssignmentIcon from '@mui/icons-material/Assignment'; // Ícone para desafios
+import CreditCardIcon from '@mui/icons-material/CreditCard'; 
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney'; 
+import StarIcon from '@mui/icons-material/Star'; 
+import AssignmentIcon from '@mui/icons-material/Assignment'; 
 import { Box, Typography, List, ListItem, ListItemText, Grid, Button } from '@mui/material';
 import VerticalAppBar from '../components/VerticalAppBar';
 import { useState, useEffect  } from 'react';
-import axios from "axios";
+import { useLocation } from 'react-router-dom';
 import AlunoService from '../services/AlunoService';
 import ProfessorService from '../services/ProfessorService';
-import { useParams } from "react-router-dom";
+
 
 const Dashboard = () => {
 
-    const { id } = useParams();
+    const id = location.state?.userId || localStorage.getItem('userId');
     const [aluno, setAluno] = useState(null);  // Estado para armazenar os dados do aluno
     const [professor, setProfessor] = useState(null);  // Estado para armazenar os dados do aluno
     const [loading, setLoading] = useState(true);  // Estado para controle de carregamento
 
 
     useEffect(() => {
-        // Função para buscar o aluno
         const fetchAluno = async () => {
             try {
                 const alunoData = await AlunoService.getAlunoById(id);

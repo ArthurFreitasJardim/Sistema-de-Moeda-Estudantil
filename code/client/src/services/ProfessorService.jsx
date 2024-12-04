@@ -2,17 +2,28 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:3000/api/professor';
 
-class AlunoService {
+class ProfessorService {
 
-  async getAllAlunos() {
+  async getAllProfessores() {
     try {
-      const response = await axios.get(`${API_URL}/`);
-      return response.data;
+      const response = await axios.get(`${API_URL}`);
+      return response.data;  
     } catch (error) {
-      console.error('Erro ao buscar alunos:', error);
-      throw new Error('Não foi possível buscar alunos');
+      console.error('Erro ao buscar todos os professores:', error);
+      throw new Error('Não foi possível buscar os professores');
     }
   }
+
+  async createProfessor(data) {
+    console.log(data)
+    try {
+      const response = await axios.post(`${API_URL}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao criar professor:', error);
+      throw new Error('Não foi possível criar o professor');
+    }
+  }  
 
   async getProfessorById(id) {
     try {
@@ -22,36 +33,6 @@ class AlunoService {
     } catch (error) {
       console.error(`Erro aq ao buscar professor com ID ${id}:`, error);
       throw new Error('Não foi possível buscar o professor');
-    }
-  }
-
-  async createAluno(data) {
-    try {
-      const response = await axios.post(`${API_URL}`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao criar aluno:', error);
-      throw new Error('Não foi possível criar o aluno');
-    }
-  }
-
-  async updateAluno(id, data) {
-    try {
-      const response = await axios.put(`${API_URL}/${id}`, data);
-      return response.data;
-    } catch (error) {
-      console.error(`Erro ao atualizar aluno com ID ${id}:`, error);
-      throw new Error('Não foi possível atualizar o aluno');
-    }
-  }
-
-  async deleteAluno(id) {
-    try {
-      const response = await axios.delete(`${API_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Erro ao deletar aluno com ID ${id}:`, error);
-      throw new Error('Não foi possível deletar o aluno');
     }
   }
 
@@ -89,4 +70,4 @@ class AlunoService {
   }
 }
 
-export default new AlunoService();
+export default new ProfessorService();
