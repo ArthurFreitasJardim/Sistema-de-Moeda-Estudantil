@@ -1,0 +1,19 @@
+@startuml CADASTRAR VANTAGEM
+actor Empresa
+participant "SA Vantagens" as SA
+database "DataBase" as DB
+==Login==
+Empresa -> SA: Login(email, senha)
+SA -> DataBase: validarUsuario(email, senha)
+SA --> Empresa: logado
+==Cadastrar Vantagem==
+Empresa -> SA: cadastrarVantagem(img, empresaId, titulo, valor)
+SA -> DB: validaVantagem(empresaId, titulo)
+SA <-- DB: retorno
+alt ["retorno = false"]
+    SA -> DB: cadastrar(img, empresaId, titulo, valor)
+    Empresa <-- SA: cadastrado
+else ["retorno = true"]
+    Empresa <-- SA: vantagem ja cadastrada
+end
+@enduml
