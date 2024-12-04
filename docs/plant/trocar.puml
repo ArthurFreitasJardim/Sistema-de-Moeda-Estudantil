@@ -1,0 +1,26 @@
+@startuml TROCAR
+actor Aluno
+participant "Sistema" as SA
+database "DataBase" as DB
+==Login==
+Aluno -> SA: Login(email, senha)
+SA -> DB: validarUsuario(email, senha)
+SA <-- DB: logado
+SA --> Aluno: logado
+==Listar Vantagens==
+Aluno -> SA: exibirVantagens
+SA -> DB: exibirVantagens
+SA <-- DB: vantagens
+SA --> Aluno: vantagens
+==Trocar Vantagem==
+Aluno -> SA: enviarMoedas(alunoId, numMoedas, vantagemId)
+SA -> DB: verificarSaldo(alunoId)
+SA <-- DB: saldo
+alt ["saldo >"]
+    SA -> DB: trocar(alunoId, numMoedas, vantagemId)
+    SA -> SA: gerarCupom
+    Aluno <-- SA: cupom
+else ["saldo <"]
+    Aluno <-- SA: saldo insuficiente
+end
+@enduml

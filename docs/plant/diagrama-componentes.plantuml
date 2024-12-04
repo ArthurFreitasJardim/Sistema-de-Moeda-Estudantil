@@ -1,0 +1,112 @@
+@startuml
+package "Client" {
+    [index.html]
+    [package.json]
+    [package-lock.json]
+    [README.md]
+    package "src" {
+        [App.jsx]
+        [assets/logo-puc-minas.jpg]
+        package "components" {
+            [Dashboard.jsx]
+            [DataTableList.jsx]
+            [FloatingActionButton.jsx]
+            [Login.jsx]
+            [PrivateRoute.jsx]
+            [RecoverPassword.jsx]
+            [Register.jsx]
+            [ResetPassword.jsx]
+            [VerticalAppBar.jsx]
+        }
+        [main.jsx]
+        package "pages" {
+            [AllCouponsPage.jsx]
+            [AllStudentsPage.jsx]
+            [AllTeachersPage.jsx]
+            [CoursesPage.jsx]
+            [DashboardPage.jsx]
+            [LoginPage.jsx]
+            [PartnersPage.jsx]
+            [RecoverPasswordPage.jsx]
+            [RedeemPointsPage.jsx]
+            [RegisterPage.jsx]
+            [ResetPasswordPage.jsx]
+        }
+        [public/vite.svg]
+        [routes/AppRoutes.jsx]
+        package "services" {
+            [AlunoService.jsx]
+            [AuthService.jsx]
+            [CursoService.jsx]
+            [InstituicaoService.jsx]
+            [ProfessorService.jsx]
+        }
+        package "styles" {
+            [courses.css]
+            [dashboard.css]
+            [dataTableList.css]
+            [index.css]
+            [login.css]
+            [partners.css]
+            [redeemPoints.css]
+            [register.css]
+            [VerticalAppBar.css]
+        }
+    }
+    [vite.config.js]
+}
+
+package "Server" {
+    [.env]
+    [app.js]
+    [package.json]
+    [package-lock.json]
+    [README.md]
+    [server.js]
+    package "src" {
+        package "controllers" {
+            [AlunoController.js]
+            [AuthController.js]
+            [CursoController.js]
+            [EmpresaController.js]
+            [InstituicaoController.js]
+            [ProfessorController.js]
+            [TransacaoController.js]
+            [VantagemController.js]
+        }
+        [database/prismaClient.js]
+        package "routes" {
+            [alunoRoutes.js]
+            [authRoutes.js]
+            [cursoRoutes.js]
+            [empresaRoutes.js]
+            [instituicaoRoutes.js]
+            [professorRoutes.js]
+            [routes.js]
+            [transacaoRoutes.js]
+            [vantagemRoutes.js]
+        }
+        package "services" {
+            [AlunoService.js]
+            [AuthService.js]
+            [CursoService.js]
+            [EmpresaService.js]
+            [InstituicaoService.js]
+            [ProfessorService.js]
+            [TransacaoService.js]
+            [VantagemService.js]
+        }
+        [util/Util.js]
+        package "prisma" {
+            [schema.prisma]
+            package "migrations" {
+                [20241106132056_migration.sql]
+                [20241106133140_adiciona_novo_campo_migration.sql]
+                [20241111124712_migration.sql]
+                [20241118221839_migration.sql]
+                [migration_lock.toml]
+            }
+        }
+    }
+}
+@enduml

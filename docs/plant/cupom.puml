@@ -1,0 +1,19 @@
+@startuml
+package "Usuário" {
+    object "Aluno" as Aluno
+}
+
+package "Sistemas Internos" {
+    object "Sistema" as Sistema
+    object "Serviço de Cupom" as ServicoCupom
+    object "Serviço de E-mail" as ServicoEmail
+}
+
+Sistema --> Sistema: 1.1 geraCupom()
+ServicoCupom --> ServicoEmail: 1.2enviarCupom(professor, aluno)
+ServicoEmail --> Aluno: 1.3enviarEmail(cupom)
+ServicoEmail --> ServicoCupom: 1.4confirmacaoEnvio
+ServicoCupom --> Sistema: 1.5envioConcluido
+
+
+@enduml
