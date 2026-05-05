@@ -1,0 +1,59 @@
+@startuml
+abstract class Usuario {
+    - id: Long
+    - nome: String
+    - email: String
+    - cpf: String
+    - senha: String
+    + login(): boolean
+}
+
+class Aluno {
+    - rg: String
+    - endereco: String
+    - curso: String
+    - saldo: Integer
+}
+
+class Professor {
+    - departamento: String
+    - saldoCorrente: Integer
+}
+
+class Instituicao {
+    - id: Long
+    - nome: String
+}
+
+class EmpresaParceira {
+    - cnpj: String
+}
+
+class Vantagem {
+    - id: Long
+    - descricao: String
+    - fotoUrl: String
+    - custoMoedas: Integer
+}
+
+class Transacao {
+    - id: Long
+    - valor: Integer
+    - data: DateTime
+    - motivo: String
+}
+
+Usuario <|-- Aluno
+Usuario <|-- Professor
+Usuario <|-- EmpresaParceira
+
+Instituicao "1" *-- "many" Professor
+Instituicao "1" *-- "many" Aluno
+
+Professor "1" -- "many" Transacao : envia >
+Aluno "1" -- "many" Transacao : recebe/gasta >
+
+EmpresaParceira "1" *-- "many" Vantagem : oferece >
+Vantagem "1" -- "many" Transacao : gera >
+
+@enduml

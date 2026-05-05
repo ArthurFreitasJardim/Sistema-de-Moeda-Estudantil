@@ -1,0 +1,32 @@
+@startuml
+package "Frontend (React + TypeScript)" {
+    [UI Componentes]
+    [State Management]
+}
+
+package "Backend (Micronaut / Java)" {
+    [Auth API]
+    [Transacao Service]
+    [Usuario Service]
+    [Vantagem Service]
+    [Email Service]
+}
+
+database "PostgreSQL" {
+    [Data Store]
+}
+
+cloud "External Services" {
+    [SMTP Server]
+}
+
+[UI Componentes] --> [Auth API] : REST/JSON
+[UI Componentes] --> [Transacao Service] : REST/JSON
+[Transacao Service] --> [Data Store]
+[Usuario Service] --> [Data Store]
+[Vantagem Service] --> [Data Store]
+[Auth API] --> [Data Store]
+
+[Transacao Service] ..> [Email Service] : triggers
+[Email Service] --> [SMTP Server] : SMTP
+@enduml

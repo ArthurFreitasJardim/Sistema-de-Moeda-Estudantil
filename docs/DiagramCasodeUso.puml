@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Usuário Autenticado" as UA
+actor "Aluno" as AL
+actor "Professor" as PR
+actor "Empresa Parceira" as EP
+
+UA <|-- AL
+UA <|-- PR
+UA <|-- EP
+
+rectangle "Sistema de Moeda Estudantil" {
+    (Fazer Login) as UC_Login
+    (Manter Cadastro Aluno) as UC_CadAL
+    (Manter Cadastro Empresa) as UC_CadEP
+    (Consultar Extrato) as UC_Extrato
+    (Enviar Moedas) as UC_EnviarMoedas
+    (Cadastrar Vantagem) as UC_CadVantagem
+    (Resgatar Vantagem) as UC_Resgatar
+    (Notificar por Email) as UC_Email
+    
+    UC_CadAL ..> UC_Login : <<include>>
+    UC_CadEP ..> UC_Login : <<include>>
+    UC_Extrato ..> UC_Login : <<include>>
+    UC_EnviarMoedas ..> UC_Login : <<include>>
+    UC_CadVantagem ..> UC_Login : <<include>>
+    UC_Resgatar ..> UC_Login : <<include>>
+    
+    UC_EnviarMoedas ..> UC_Email : <<include>>
+    UC_Resgatar ..> UC_Email : <<include>>
+}
+
+AL --> UC_CadAL
+AL --> UC_Extrato
+AL --> UC_Resgatar
+
+PR --> UC_EnviarMoedas
+PR --> UC_Extrato
+
+EP --> UC_CadEP
+EP --> UC_CadVantagem
+@enduml
