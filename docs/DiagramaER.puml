@@ -1,0 +1,92 @@
+@startuml
+skinparam linetype ortho
+skinparam shadowing false
+skinparam class {
+    BackgroundColor White
+    ArrowColor DarkCyan
+    BorderColor DarkCyan
+}
+
+entity "Instituicao" as inst {
+  * id : BIGINT <<PK>>
+  --
+  * nome : VARCHAR(255)
+}
+
+entity "Usuario" as usu {
+  * id : BIGINT <<PK>>
+  --
+  * nome : VARCHAR(255)
+  * email : VARCHAR(255) <<UNIQUE>>
+  * senha : VARCHAR(255)
+  * tipo_usuario : ENUM('ALUNO', 'PROFESSOR', 'EMPRESA')
+}
+
+entity "Aluno" as alu {
+  * usuario_id : BIGINT <<PK>> <<FK>>
+  --
+  * cpf : VARCHAR(14) <<UNIQUE>>
+  * rg : VARCHAR(20)
+  * endereco : TEXT
+  * curso : VARCHAR(100)
+  * instituicao_id : BIGINT <<FK>>
+  * saldo_atual : INT
+}
+
+entity "Professor" as prof {
+  * usuario_id : BIGINT <<PK>> <<FK>>
+  --
+  * cpf : VARCHAR(14) <<UNIQUE>>
+  * departamento : VARCHAR(100)
+  * instituicao_id : BIGINT <<FK>>
+  * saldo_corrente : INT
+}
+
+entity "Empresa" as emp {
+  * usuario_id : BIGINT <<PK>> <<FK>>
+  --
+  * cnpj : VARCHAR(18) <<UNIQUE>>
+}
+
+entity "Vantagem" as vant {
+  * id : BIGINT <<PK>>
+  --
+  * empresa_id : BIGINT <<FK>>
+  * descricao : TEXT
+  * foto_url : VARCHAR(255)
+  * custo_moedas : INT
+}
+
+entity "Transacao_Moeda" as trans {
+  * id : BIGINT <<PK>>
+  --
+  * professor_id : BIGINT <<FK>>
+  * aluno_id : BIGINT <<FK>>
+  * valor : INT
+  * motivo : TEXT
+  * data_hora : TIMESTAMP
+}
+
+entity "Resgate_Vantagem" as resg {
+  * id : BIGINT <<PK>>
+  --
+  * aluno_id : BIGINT <<FK>>
+  * vantagem_id : BIGINT <<FK>>
+  * codigo_cupom : VARCHAR(50) <<UNIQUE>>
+  * data_hora : TIMESTAMP
+  * valor_pago : INT
+}
+
+' Relacionamentos
+inst ||--o{ alu : "possui"
+inst ||--o{ prof : "vincula"
+usu ||--|| alu : "é um"
+usu ||--|| prof : "é um"
+usu ||--|| emp : "é uma"
+emp ||--o{ vant : "oferece"
+prof ||--o{ trans : "envia"
+alu ||--o{ trans : "recebe"
+alu ||--o{ resg : "realiza"
+vant ||--o{ resg : "gera"
+
+@enduml
