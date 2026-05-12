@@ -1,32 +1,44 @@
 @startuml
+skinparam classAttributeIconSize 0
+
 abstract class Usuario {
     - id: Long
     - nome: String
     - email: String
-    - cpf: String
-    - senha: String
-    + login(): boolean
+    - login: String
+    - senhaHash: String
+    + autenticar(senha: String): Boolean
 }
 
 class Aluno {
+    - cpf: String
     - rg: String
     - endereco: String
     - curso: String
-    - saldo: Integer
+    - saldoMoedas: Integer
+    + cadastrar(): void
+    + consultarExtrato(): List<Transacao>
+    + resgatarVantagem(vantagem: Vantagem): Cupom
 }
 
 class Professor {
+    - cpf: String
     - departamento: String
     - saldoCorrente: Integer
-}
-
-class Instituicao {
-    - id: Long
-    - nome: String
+    + consultarExtrato(): List<Transacao>
+    + enviarMoedas(aluno: Aluno, quantidade: Integer, motivo: String): Transacao
+    + acumularSaldoSemestral(): void
 }
 
 class EmpresaParceira {
     - cnpj: String
+    + cadastrarVantagem(descricao: String, foto: Byte[], custo: Integer): Vantagem
+}
+
+class InstituicaoEnsino {
+    - id: Long
+    - nome: String
+    + listarProfessores(): List<Professor>
 }
 
 class Vantagem {
@@ -36,24 +48,37 @@ class Vantagem {
     - custoMoedas: Integer
 }
 
-class Transacao {
+abstract class Transacao {
     - id: Long
-    - valor: Integer
-    - data: DateTime
+    - dataHora: LocalDateTime
+    - valorMoedas: Integer
+}
+
+class TransacaoEnvio {
     - motivo: String
 }
 
+class CupomResgate {
+    - codigoGerado: String
+}
+
+' Herança
 Usuario <|-- Aluno
 Usuario <|-- Professor
 Usuario <|-- EmpresaParceira
+Transacao <|-- TransacaoEnvio
+Transacao <|-- CupomResgate
 
-Instituicao "1" *-- "many" Professor
-Instituicao "1" *-- "many" Aluno
+' Associações e Multiplicidades
+InstituicaoEnsino "1" -- "0..*" Aluno : possui >
+InstituicaoEnsino "1" -- "0..*" Professor : vincula >
 
-Professor "1" -- "many" Transacao : envia >
-Aluno "1" -- "many" Transacao : recebe/gasta >
+EmpresaParceira "1" *-- "0..*" Vantagem : gerencia >
 
-EmpresaParceira "1" *-- "many" Vantagem : oferece >
-Vantagem "1" -- "many" Transacao : gera >
+Professor "1" -- "0..*" TransacaoEnvio : remetente >
+Aluno "1" -- "0..*" TransacaoEnvio : destinatario >
+
+Aluno "1" -- "0..*" CupomResgate : realiza >
+Vantagem "1" -- "0..*" CupomResgate : referente a >
 
 @enduml
