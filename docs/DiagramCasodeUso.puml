@@ -1,44 +1,78 @@
 @startuml
 left to right direction
 skinparam packageStyle rectangle
-
-actor "Usuário Autenticado" as UA
-actor "Aluno" as AL
-actor "Professor" as PR
-actor "Empresa Parceira" as EP
-
-UA <|-- AL
-UA <|-- PR
-UA <|-- EP
-
-rectangle "Sistema de Moeda Estudantil" {
-    (Fazer Login) as UC_Login
-    (Manter Cadastro Aluno) as UC_CadAL
-    (Manter Cadastro Empresa) as UC_CadEP
-    (Consultar Extrato) as UC_Extrato
-    (Enviar Moedas) as UC_EnviarMoedas
-    (Cadastrar Vantagem) as UC_CadVantagem
-    (Resgatar Vantagem) as UC_Resgatar
-    (Notificar por Email) as UC_Email
-    
-    UC_CadAL ..> UC_Login : <<include>>
-    UC_CadEP ..> UC_Login : <<include>>
-    UC_Extrato ..> UC_Login : <<include>>
-    UC_EnviarMoedas ..> UC_Login : <<include>>
-    UC_CadVantagem ..> UC_Login : <<include>>
-    UC_Resgatar ..> UC_Login : <<include>>
-    
-    UC_EnviarMoedas ..> UC_Email : <<include>>
-    UC_Resgatar ..> UC_Email : <<include>>
+skinparam usecase {
+    BackgroundColor LightCyan
+    BorderColor DarkCyan
 }
 
-AL --> UC_CadAL
-AL --> UC_Extrato
-AL --> UC_Resgatar
+actor "Aluno" as Aluno
+actor "Professor" as Professor
+actor "Empresa Parceira" as Empresa
+actor "Sistema de E-mail" as EmailAPI
+actor "Tempo (Semestral)" as Tempo
 
-PR --> UC_EnviarMoedas
-PR --> UC_Extrato
+rectangle "Sistema de Moeda Estudantil (Release 1)" {
+    
+    package "Acesso e Cadastros" {
+        usecase "Realizar Autenticação (Login)" as UC_Login
+        usecase "Cadastrar Aluno" as UC_CadAluno
+        usecase "Selecionar Instituição de Ensino" as UC_SelInst
+        usecase "Cadastrar Empresa Parceira" as UC_CadEmpresa
+        
+        UC_CadAluno ..> UC_SelInst : <<include>>
+    }
 
-EP --> UC_CadEP
-EP --> UC_CadVantagem
+    package "Gestão de Moedas e Extrato" {
+        usecase "Consultar Extrato da Conta" as UC_Extrato
+        usecase "Adicionar 1.000 Moedas" as UC_Acumulo
+        
+        usecase "Enviar Moedas de Mérito" as UC_EnviarMoedas
+        usecase "Informar Motivo do Envio (Mensagem Obrigatória)" as UC_Motivo
+        usecase "Notificar Aluno por E-mail" as UC_NotificaRecebimento
+        
+        UC_EnviarMoedas ..> UC_Motivo : <<include>>
+        UC_EnviarMoedas ..> UC_NotificaRecebimento : <<include>>
+        
+        ' Inclusão de login para ações restritas
+        UC_Extrato ..> UC_Login : <<include>>
+        UC_EnviarMoedas ..> UC_Login : <<include>>
+    }
+
+    package "Catálogo e Resgate de Vantagens" {
+        usecase "Cadastrar Vantagem (Foto, Descrição, Custo)" as UC_CadVantagem
+        usecase "Resgatar Vantagem" as UC_Resgatar
+        usecase "Gerar Código do Cupom" as UC_GerarCodigo
+        usecase "Enviar Cupom por E-mail (Aluno e Empresa)" as UC_NotificaCupom
+        
+        UC_Resgatar ..> UC_GerarCodigo : <<include>>
+        UC_Resgatar ..> UC_NotificaCupom : <<include>>
+        
+        ' Inclusão de login para ações restritas
+        UC_CadVantagem ..> UC_Login : <<include>>
+        UC_Resgatar ..> UC_Login : <<include>>
+    }
+}
+
+' ==========================================
+' Relacionamentos Atores -> Casos de Uso
+' ==========================================
+
+Aluno --> UC_CadAluno
+Aluno --> UC_Extrato
+Aluno --> UC_Resgatar
+
+Professor --> UC_Extrato
+Professor --> UC_EnviarMoedas
+
+Empresa --> UC_CadEmpresa
+Empresa --> UC_CadVantagem
+
+' Gatilho do sistema
+Tempo --> UC_Acumulo : Dispara acúmulo no semestre
+
+' Comunicação com APIs Externas
+UC_NotificaRecebimento --> EmailAPI
+UC_NotificaCupom --> EmailAPI
+
 @enduml
