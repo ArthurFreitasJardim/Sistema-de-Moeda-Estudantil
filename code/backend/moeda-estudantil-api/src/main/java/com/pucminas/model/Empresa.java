@@ -3,12 +3,14 @@ package com.pucminas.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import io.micronaut.serde.annotation.Serdeable;
+import jakarta.validation.constraints.NotBlank;
 
 @Serdeable
 @Entity
 public class Empresa extends Usuario {
     
-    @Column(unique = true)
+    @NotBlank
+    @Column(unique = true, nullable = false)
     private String cnpj;
 
     public String getCnpj() { return cnpj; }

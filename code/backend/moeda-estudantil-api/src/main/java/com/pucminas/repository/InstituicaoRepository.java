@@ -1,0 +1,13 @@
+package com.pucminas.repository;
+
+import com.pucminas.model.Instituicao;
+import io.micronaut.data.annotation.Repository;
+import io.micronaut.data.repository.CrudRepository;
+
+import java.util.Optional;
+
+@Repository
+public interface InstituicaoRepository extends CrudRepository<Instituicao, Long> {
+
+    Optional<Instituicao> findByNome(String nome);
+}
