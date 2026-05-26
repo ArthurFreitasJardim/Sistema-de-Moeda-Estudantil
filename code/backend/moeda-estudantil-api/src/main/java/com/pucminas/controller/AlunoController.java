@@ -27,8 +27,7 @@ public class AlunoController {
     public AlunoController(
             AlunoRepository alunoRepository,
             InstituicaoRepository instituicaoRepository,
-            ProfessorRepository professorRepository
-    ) {
+            ProfessorRepository professorRepository) {
         this.alunoRepository = alunoRepository;
         this.instituicaoRepository = instituicaoRepository;
         this.professorRepository = professorRepository;
@@ -71,15 +70,13 @@ public class AlunoController {
     @Post(consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
     public HttpResponse<?> criar(@Body CriarAlunoRequest request) {
         try {
-            if (
-                    request.nome() == null || request.nome().isBlank() ||
+            if (request.nome() == null || request.nome().isBlank() ||
                     request.email() == null || request.email().isBlank() ||
                     request.senha() == null || request.senha().isBlank() ||
                     request.cpf() == null || request.cpf().isBlank() ||
                     request.rg() == null || request.rg().isBlank() ||
                     request.curso() == null || request.curso().isBlank() ||
-                    request.instituicaoNome() == null || request.instituicaoNome().isBlank()
-            ) {
+                    request.instituicaoNome() == null || request.instituicaoNome().isBlank()) {
                 return HttpResponse.badRequest(new ErroResponse("Todos os campos do aluno são obrigatórios"));
             }
 
@@ -126,13 +123,10 @@ public class AlunoController {
     private boolean pertenceAoMesmoCursoEInstituicao(
             Aluno aluno,
             String departamentoProfessor,
-            String instituicaoProfessor
-    ) {
-        if (
-                aluno.getCurso() == null ||
+            String instituicaoProfessor) {
+        if (aluno.getCurso() == null ||
                 aluno.getInstituicao() == null ||
-                aluno.getInstituicao().getNome() == null
-        ) {
+                aluno.getInstituicao().getNome() == null) {
             return false;
         }
 
@@ -153,7 +147,19 @@ public class AlunoController {
                 aluno.getRg(),
                 aluno.getCurso(),
                 instituicaoNome,
-                aluno.getSaldoAtual()
-        );
+                aluno.getSaldoAtual());
     }
+
+    @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
+    public HttpResponse<?> buscarPorId(@PathVariable Long id) {
+        Optional<Aluno> aluno = alunoRepository.findById(id);
+
+        if (aluno.isEmpty()) {
+            return HttpResponse.notFound(new ErroResponse("Aluno não encontrado"));
+        }
+
+        return HttpResponse.ok(toResponse(aluno.get()));
+    }
+
+    
 }

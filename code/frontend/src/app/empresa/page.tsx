@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 type Empresa = {
   id: number;
@@ -93,7 +94,7 @@ export default function PainelEmpresa() {
     const valorMoedas = Number(formVantagem.valorMoedas);
 
     if (!formVantagem.nome.trim() || !formVantagem.descricao.trim() || !valorMoedas || valorMoedas <= 0) {
-      alert("Preencha todos os campos corretamente.");
+      toast.error("Preencha todos os campos corretamente.");
       return;
     }
 
@@ -125,7 +126,7 @@ export default function PainelEmpresa() {
       }
 
       if (res.ok) {
-        alert("Vantagem cadastrada com sucesso!");
+        toast.success("Vantagem cadastrada com sucesso!");
         setFormVantagem({
           nome: "",
           descricao: "",
@@ -133,12 +134,12 @@ export default function PainelEmpresa() {
         });
         carregarDados();
       } else {
-        alert(`Erro ao cadastrar vantagem: ${body.erro || body.message || texto || "Erro desconhecido"}`);
+        toast.error(`Erro ao cadastrar vantagem: ${body.erro || body.message || texto || "Erro desconhecido"}`);
       }
 
     } catch (error) {
       console.error("Erro ao cadastrar vantagem:", error);
-      alert("Erro ao comunicar com o back-end.");
+      toast.error("Erro ao comunicar com o back-end.");
     }
   };
 
@@ -154,11 +155,11 @@ export default function PainelEmpresa() {
       if (res.ok) {
         carregarDados();
       } else {
-        alert("Erro ao excluir vantagem.");
+        toast.error("Erro ao excluir vantagem.");
       }
     } catch (error) {
       console.error("Erro ao excluir vantagem:", error);
-      alert("Erro ao comunicar com o back-end.");
+      toast.error("Erro ao comunicar com o back-end.");
     }
   };
 
