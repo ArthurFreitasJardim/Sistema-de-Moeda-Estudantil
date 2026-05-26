@@ -1,92 +1,47 @@
 @startuml
-skinparam linetype ortho
+left to right direction
 skinparam shadowing false
-skinparam class {
-    BackgroundColor White
-    ArrowColor DarkCyan
-    BorderColor DarkCyan
-}
+skinparam monochrome true
 
-entity "Instituicao" as inst {
-  * id : BIGINT <<PK>>
-  --
-  * nome : VARCHAR(255)
-}
+' ==========================================
+' ENTIDADES (Retângulos)
+' ==========================================
+rectangle "Instituição de Ensino" as Inst
+rectangle "Professor" as Prof
+rectangle "Aluno" as Alu
+rectangle "Empresa Parceira" as Emp
+rectangle "Vantagem" as Vant
 
-entity "Usuario" as usu {
-  * id : BIGINT <<PK>>
-  --
-  * nome : VARCHAR(255)
-  * email : VARCHAR(255) <<UNIQUE>>
-  * senha : VARCHAR(255)
-  * tipo_usuario : ENUM('ALUNO', 'PROFESSOR', 'EMPRESA')
-}
+' ==========================================
+' RELACIONAMENTOS (Losangos)
+' ==========================================
+diamond "Vincula" as Rel_InstProf
+diamond "Matricula" as Rel_InstAlu
+diamond "Reconhece\n(Envia Moedas)" as Rel_ProfAlu
+diamond "Resgata\n(Gera Cupom)" as Rel_AluVant
+diamond "Oferece" as Rel_EmpVant
 
-entity "Aluno" as alu {
-  * usuario_id : BIGINT <<PK>> <<FK>>
-  --
-  * cpf : VARCHAR(14) <<UNIQUE>>
-  * rg : VARCHAR(20)
-  * endereco : TEXT
-  * curso : VARCHAR(100)
-  * instituicao_id : BIGINT <<FK>>
-  * saldo_atual : INT
-}
+' ==========================================
+' CONEXÕES E CARDINALIDADES
+' ==========================================
+' 1 Instituição possui N Professores
+Inst -- Rel_InstProf : "1"
+Rel_InstProf -- Prof : "n"
 
-entity "Professor" as prof {
-  * usuario_id : BIGINT <<PK>> <<FK>>
-  --
-  * cpf : VARCHAR(14) <<UNIQUE>>
-  * departamento : VARCHAR(100)
-  * instituicao_id : BIGINT <<FK>>
-  * saldo_corrente : INT
-}
+' 1 Instituição possui N Alunos
+Inst -- Rel_InstAlu : "1"
+Rel_InstAlu -- Alu : "n"
 
-entity "Empresa" as emp {
-  * usuario_id : BIGINT <<PK>> <<FK>>
-  --
-  * cnpj : VARCHAR(18) <<UNIQUE>>
-}
+' N Professores enviam moedas para N Alunos
+Prof -- Rel_ProfAlu : "n"
+Rel_ProfAlu -- Alu : "n"
 
-entity "Vantagem" as vant {
-  * id : BIGINT <<PK>>
-  --
-  * empresa_id : BIGINT <<FK>>
-  * descricao : TEXT
-  * foto_url : VARCHAR(255)
-  * custo_moedas : INT
-}
+' N Alunos resgatam N Vantagens
+Alu -- Rel_AluVant : "n"
+Rel_AluVant -- Vant : "n"
 
-entity "Transacao_Moeda" as trans {
-  * id : BIGINT <<PK>>
-  --
-  * professor_id : BIGINT <<FK>>
-  * aluno_id : BIGINT <<FK>>
-  * valor : INT
-  * motivo : TEXT
-  * data_hora : TIMESTAMP
-}
-
-entity "Resgate_Vantagem" as resg {
-  * id : BIGINT <<PK>>
-  --
-  * aluno_id : BIGINT <<FK>>
-  * vantagem_id : BIGINT <<FK>>
-  * codigo_cupom : VARCHAR(50) <<UNIQUE>>
-  * data_hora : TIMESTAMP
-  * valor_pago : INT
-}
-
-' Relacionamentos
-inst ||--o{ alu : "possui"
-inst ||--o{ prof : "vincula"
-usu ||--|| alu : "é um"
-usu ||--|| prof : "é um"
-usu ||--|| emp : "é uma"
-emp ||--o{ vant : "oferece"
-prof ||--o{ trans : "envia"
-alu ||--o{ trans : "recebe"
-alu ||--o{ resg : "realiza"
-vant ||--o{ resg : "gera"
+' 1 Empresa oferece N Vantagens
+Emp -- Rel_EmpVant : "1"
+Rel_EmpVant -- Vant : "n"
 
 @enduml
