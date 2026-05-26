@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 type Aluno = {
@@ -109,11 +110,11 @@ export default function Home() {
         });
         carregarDados();
       } else {
-        alert(`Erro ao cadastrar aluno: ${body.erro || body.message || texto || "Erro desconhecido"}`);
+        toast.error(`Erro ao cadastrar aluno: ${body.erro || body.message || texto || "Erro desconhecido"}`);
       }
     } catch (error) {
       console.error("Erro ao cadastrar aluno:", error);
-      alert("Erro ao comunicar com o back-end.");
+      toast.error("Erro ao comunicar com o back-end.");
     }
   };
 
@@ -160,11 +161,11 @@ export default function Home() {
         });
         carregarDados();
       } else {
-        alert(`Erro ao cadastrar empresa: ${body.erro || body.message || texto || "Erro desconhecido"}`);
+        toast.error(`Erro ao cadastrar empresa: ${body.erro || body.message || texto || "Erro desconhecido"}`);
       }
     } catch (error) {
       console.error("Erro ao cadastrar empresa:", error);
-      alert("Erro ao comunicar com o back-end.");
+      toast.error("Erro ao comunicar com o back-end.");
     }
   };
 
@@ -177,13 +178,17 @@ export default function Home() {
       if (res.ok) {
         carregarDados();
       } else {
-        alert("Erro ao excluir.");
+        toast.error("Erro ao excluir.");
       }
     }
   };
 
   const abrirPainelEmpresa = (empresaId: number) => {
     router.push(`/empresa?id=${empresaId}`);
+  };
+
+  const abrirPerfilAluno = (alunoId: number) => {
+    router.push(`/aluno/${alunoId}`);
   };
 
   return (
@@ -205,22 +210,20 @@ export default function Home() {
             <div className="flex p-1 bg-[#0f172a] rounded-xl mb-8">
               <button
                 onClick={() => setAbaAtiva("aluno")}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                  abaAtiva === "aluno"
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${abaAtiva === "aluno"
                     ? "bg-blue-600 text-white shadow-lg"
                     : "text-slate-500 hover:text-slate-300"
-                }`}
+                  }`}
               >
                 ALUNO
               </button>
 
               <button
                 onClick={() => setAbaAtiva("empresa")}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                  abaAtiva === "empresa"
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${abaAtiva === "empresa"
                     ? "bg-emerald-600 text-white shadow-lg"
                     : "text-slate-500 hover:text-slate-300"
-                }`}
+                  }`}
               >
                 EMPRESA
               </button>
@@ -333,17 +336,26 @@ export default function Home() {
                 {alunos.map((a) => (
                   <div
                     key={a.id}
-                    className="flex justify-between items-center bg-[#0f172a] p-4 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all"
+                    onClick={() => abrirPerfilAluno(a.id)}
+                    className="flex justify-between items-center bg-[#0f172a] p-4 rounded-2xl border border-slate-800 hover:border-blue-500/50 transition-all cursor-pointer"
                   >
                     <div>
                       <p className="font-bold text-slate-100">{a.nome}</p>
+
                       <p className="text-xs text-slate-500 uppercase tracking-widest">
                         {a.curso} {a.instituicaoNome ? `— ${a.instituicaoNome}` : ""}
+                      </p>
+
+                      <p className="text-[10px] text-blue-400 uppercase font-bold tracking-widest mt-2">
+                        Clique para acessar o perfil do aluno
                       </p>
                     </div>
 
                     <button
-                      onClick={() => excluirItem("alunos", a.id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        excluirItem("alunos", a.id);
+                      }}
                       className="text-red-400 hover:bg-red-500/10 px-4 py-2 rounded-lg text-xs font-bold transition-all"
                     >
                       EXCLUIR

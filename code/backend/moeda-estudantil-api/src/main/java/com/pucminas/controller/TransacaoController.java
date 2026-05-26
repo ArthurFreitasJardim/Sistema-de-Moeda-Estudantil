@@ -3,6 +3,7 @@ package com.pucminas.controller;
 import com.pucminas.dto.CriarTransacaoRequest;
 import com.pucminas.dto.ErroResponse;
 import com.pucminas.dto.StatusResponse;
+import com.pucminas.dto.TransacaoExtratoResponse;
 import com.pucminas.dto.TransacaoProfessorResponse;
 import com.pucminas.model.Aluno;
 import com.pucminas.model.Professor;
@@ -10,6 +11,7 @@ import com.pucminas.model.Transacao;
 import com.pucminas.repository.AlunoRepository;
 import com.pucminas.repository.ProfessorRepository;
 import com.pucminas.repository.TransacaoRepository;
+import com.pucminas.service.EmailService;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
@@ -24,24 +26,37 @@ public class TransacaoController {
     private final TransacaoRepository transacaoRepository;
     private final ProfessorRepository professorRepository;
     private final AlunoRepository alunoRepository;
+    private final EmailService emailService;
 
     public TransacaoController(
             TransacaoRepository transacaoRepository,
             ProfessorRepository professorRepository,
-            AlunoRepository alunoRepository
+            AlunoRepository alunoRepository,
+            EmailService emailService
     ) {
         this.transacaoRepository = transacaoRepository;
         this.professorRepository = professorRepository;
         this.alunoRepository = alunoRepository;
+        this.emailService = emailService;
     }
 
     @Get(uri = "/professor/{professorId}", produces = MediaType.APPLICATION_JSON)
-    public List<TransacaoProfessorResponse> listarPorProfessor(Long professorId) {
+    public List<TransacaoProfessorResponse> listarPorProfessor(@PathVariable Long professorId) {
         return StreamSupport.stream(
                         transacaoRepository.findByRemetenteId(professorId).spliterator(),
                         false
                 )
                 .map(this::toProfessorResponse)
+                .toList();
+    }
+
+    @Get(uri = "/aluno/{alunoId}", produces = MediaType.APPLICATION_JSON)
+    public List<TransacaoExtratoResponse> listarPorAluno(@PathVariable Long alunoId) {
+        return StreamSupport.stream(
+                        transacaoRepository.findByDestinatarioId(alunoId).spliterator(),
+                        false
+                )
+                .map(this::toExtratoResponse)
                 .toList();
     }
 
@@ -87,7 +102,10 @@ public class TransacaoController {
             transacao.setValor(request.valor());
             transacao.setMotivo(request.motivo().trim());
 
-            transacaoRepository.save(transacao);
+            Transacao transacaoSalva = transacaoRepository.save(transacao);
+
+            emailService.enviarConfirmacaoEnvioParaProfessor(professor, aluno, transacaoSalva);
+            emailService.enviarConfirmacaoRecebimentoParaAluno(professor, aluno, transacaoSalva);
 
             return HttpResponse.created(new StatusResponse("sucesso"));
 
@@ -120,6 +138,35 @@ public class TransacaoController {
         return new TransacaoProfessorResponse(
                 transacao.getId(),
                 destinatarioNome,
+                transacao.getValor(),
+                transacao.getMotivo(),
+                transacao.getDataHora() != null ? transacao.getDataHora().toString() : ""
+        );
+    }
+
+    private TransacaoExtratoResponse toExtratoResponse(Transacao transacao) {
+        Long professorId = transacao.getRemetente() != null
+                ? transacao.getRemetente().getId()
+                : null;
+
+        String professorNome = transacao.getRemetente() != null
+                ? transacao.getRemetente().getNome()
+                : "Professor não encontrado";
+
+        Long alunoId = transacao.getDestinatario() != null
+                ? transacao.getDestinatario().getId()
+                : null;
+
+        String alunoNome = transacao.getDestinatario() != null
+                ? transacao.getDestinatario().getNome()
+                : "Aluno não encontrado";
+
+        return new TransacaoExtratoResponse(
+                transacao.getId(),
+                professorId,
+                professorNome,
+                alunoId,
+                alunoNome,
                 transacao.getValor(),
                 transacao.getMotivo(),
                 transacao.getDataHora() != null ? transacao.getDataHora().toString() : ""
