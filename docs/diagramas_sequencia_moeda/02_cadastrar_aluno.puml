@@ -1,0 +1,43 @@
+@startuml
+title UC02 - Cadastrar Aluno
+
+actor Aluno as A
+boundary "Tela de Cadastro\nNext.js" as Front
+control "AlunoController\nMicronaut" as Ctrl
+control "InstituicaoRepository" as InstRepo
+control "AlunoRepository" as AlunoRepo
+database "PostgreSQL" as DB
+
+A -> Front: Preenche dados do aluno
+Front -> Front: Valida campos obrigatórios
+Front -> Ctrl: POST /alunos\n{nome,email,cpf,rg,curso,instituicaoNome,senha}
+Ctrl -> Ctrl: Normaliza e-mail, CPF/RG e textos
+Ctrl -> InstRepo: findByNome(instituicaoNome)
+InstRepo -> DB: SELECT instituicao WHERE nome = ?
+
+alt Instituição existe
+    DB --> InstRepo: Instituição encontrada
+    InstRepo --> Ctrl: Instituição
+else Instituição não existe
+    Ctrl -> InstRepo: save(novaInstituicao)
+    InstRepo -> DB: INSERT instituicao
+    DB --> InstRepo: Instituição criada
+    InstRepo --> Ctrl: Nova instituição
+end
+
+Ctrl -> AlunoRepo: save(aluno)
+AlunoRepo -> DB: INSERT usuario + aluno
+
+alt Cadastro realizado
+    DB --> AlunoRepo: Aluno salvo
+    AlunoRepo --> Ctrl: Aluno
+    Ctrl --> Front: 201 Created\nAlunoResponse
+    Front --> A: Toast de sucesso e atualiza lista
+else CPF ou e-mail duplicado
+    DB --> AlunoRepo: Erro de restrição
+    AlunoRepo --> Ctrl: Exception
+    Ctrl --> Front: 500/400 {erro}
+    Front --> A: Toast de erro
+end
+
+@enduml

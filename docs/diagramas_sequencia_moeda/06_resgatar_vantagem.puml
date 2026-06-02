@@ -1,0 +1,54 @@
+@startuml
+title UC06 - Resgatar Vantagem
+
+actor Aluno as A
+boundary "Perfil do Aluno\nNext.js" as Front
+control "ResgateVantagemController\nMicronaut" as Ctrl
+control "AlunoRepository" as AlunoRepo
+control "VantagemRepository" as VantRepo
+control "ResgateVantagemRepository" as ResgRepo
+database "PostgreSQL" as DB
+
+A -> Front: Clica em Resgatar Vantagem
+Front -> Front: Verifica saldo, estoque e se já resgatou
+Front -> Ctrl: POST /resgates\n{alunoId, vantagemId}
+Ctrl -> AlunoRepo: findById(alunoId)
+AlunoRepo -> DB: SELECT aluno WHERE id = ?
+DB --> AlunoRepo: Aluno
+AlunoRepo --> Ctrl: Aluno
+
+Ctrl -> VantRepo: findById(vantagemId)
+VantRepo -> DB: SELECT vantagem WHERE id = ?
+DB --> VantRepo: Vantagem
+VantRepo --> Ctrl: Vantagem
+
+Ctrl -> ResgRepo: existsByAlunoIdAndVantagemId(alunoId, vantagemId)
+ResgRepo -> DB: SELECT EXISTS resgate
+DB --> ResgRepo: true/false
+ResgRepo --> Ctrl: Resultado
+
+alt Aluno já resgatou
+    Ctrl --> Front: 400 {erro: já resgatou}
+    Front --> A: Toast de erro
+else Sem estoque
+    Ctrl --> Front: 400 {erro: sem unidades disponíveis}
+    Front --> A: Toast de erro
+else Saldo insuficiente
+    Ctrl --> Front: 400 {erro: saldo insuficiente}
+    Front --> A: Toast de erro
+else Resgate permitido
+    Ctrl -> Ctrl: aluno.saldoAtual -= valorMoedas
+    Ctrl -> Ctrl: vantagem.quantidadeDisponivel -= 1
+    Ctrl -> AlunoRepo: update(aluno)
+    AlunoRepo -> DB: UPDATE aluno saldo
+    Ctrl -> VantRepo: update(vantagem)
+    VantRepo -> DB: UPDATE vantagem estoque
+    Ctrl -> ResgRepo: save(resgate)
+    ResgRepo -> DB: INSERT resgate_vantagem
+    DB --> ResgRepo: Resgate salvo
+    Ctrl --> Front: 201 Created\nResgateResponse
+    Front -> Front: Recarrega dados do aluno
+    Front --> A: Toast de sucesso
+end
+
+@enduml

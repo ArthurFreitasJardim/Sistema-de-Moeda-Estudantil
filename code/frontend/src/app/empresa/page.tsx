@@ -28,6 +28,238 @@ type FormVantagem = {
   quantidadeDisponivel: string;
 };
 
+const ACCENT = "#C6F135";
+const ACCENT_MUTED = "rgba(198,241,53,0.12)";
+const ACCENT_BORDER = "rgba(198,241,53,0.25)";
+
+function Tag({
+  children,
+  color = "default",
+}: {
+  children: React.ReactNode;
+  color?: "green" | "blue" | "red" | "purple" | "default";
+}) {
+  const styles: Record<string, React.CSSProperties> = {
+    green: {
+      background: "rgba(198,241,53,0.12)",
+      color: ACCENT,
+      border: `1px solid ${ACCENT_BORDER}`,
+    },
+    blue: {
+      background: "rgba(96,165,250,0.1)",
+      color: "#60A5FA",
+      border: "1px solid rgba(96,165,250,0.2)",
+    },
+    red: {
+      background: "rgba(248,113,113,0.1)",
+      color: "#F87171",
+      border: "1px solid rgba(248,113,113,0.2)",
+    },
+    purple: {
+      background: "rgba(168,130,255,0.1)",
+      color: "#A882FF",
+      border: "1px solid rgba(168,130,255,0.2)",
+    },
+    default: {
+      background: "rgba(255,255,255,0.05)",
+      color: "#9CA3AF",
+      border: "1px solid rgba(255,255,255,0.08)",
+    },
+  };
+
+  return (
+    <span
+      style={{
+        ...styles[color],
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        padding: "3px 10px",
+        borderRadius: 99,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: React.ReactNode;
+  sub?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        background: accent ? ACCENT_MUTED : "rgba(255,255,255,0.03)",
+        border: `1px solid ${accent ? ACCENT_BORDER : "rgba(255,255,255,0.07)"}`,
+        borderRadius: 16,
+        padding: "20px 24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: accent ? ACCENT : "#6B7280",
+        }}
+      >
+        {label}
+      </span>
+
+      <span
+        style={{
+          fontSize: 32,
+          fontWeight: 800,
+          color: accent ? ACCENT : "#F9FAFB",
+          lineHeight: 1.1,
+        }}
+      >
+        {value}
+      </span>
+
+      {sub && (
+        <span style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>
+          {sub}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        padding: "10px 0",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "#4B5563",
+        }}
+      >
+        {label}
+      </span>
+
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#D1D5DB",
+          textAlign: "right",
+          maxWidth: "60%",
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function SectionHeader({
+  dot,
+  title,
+  subtitle,
+  count,
+}: {
+  dot: string;
+  title: string;
+  subtitle: string;
+  count?: number;
+}) {
+  return (
+    <div
+      style={{
+        marginBottom: 24,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+        gap: 16,
+      }}
+    >
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 4,
+          }}
+        >
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: dot,
+              display: "inline-block",
+              boxShadow: `0 0 8px ${dot}88`,
+            }}
+          />
+
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 18,
+              fontWeight: 800,
+              color: "#F9FAFB",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {title}
+          </h2>
+        </div>
+
+        <p style={{ margin: 0, fontSize: 13, color: "#4B5563" }}>
+          {subtitle}
+        </p>
+      </div>
+
+      {count !== undefined && (
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            color: "#4B5563",
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.07)",
+            borderRadius: 8,
+            padding: "4px 12px",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {count} {count === 1 ? "item" : "itens"}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function PainelEmpresa() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,6 +270,9 @@ export default function PainelEmpresa() {
   const [vantagens, setVantagens] = useState<Vantagem[]>([]);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [abaAtiva, setAbaAtiva] = useState<"cadastrar" | "vantagens">(
+    "cadastrar"
+  );
 
   const [formVantagem, setFormVantagem] = useState<FormVantagem>({
     nome: "",
@@ -75,7 +310,12 @@ export default function PainelEmpresa() {
         return;
       }
 
-      const empresas = await buscarJson<Empresa[]>("http://localhost:8080/empresas");
+      const [empresas, vantagensCarregadas] = await Promise.all([
+        buscarJson<Empresa[]>("http://localhost:8080/empresas"),
+        buscarJson<Vantagem[]>(
+          `http://localhost:8080/vantagens/empresa/${empresaId}`
+        ),
+      ]);
 
       const empresaEncontrada = empresas.find(
         (item) => item.id === Number(empresaId)
@@ -86,10 +326,6 @@ export default function PainelEmpresa() {
         setVantagens([]);
         return;
       }
-
-      const vantagensCarregadas = await buscarJson<Vantagem[]>(
-        `http://localhost:8080/vantagens/empresa/${empresaId}`
-      );
 
       setEmpresa(empresaEncontrada);
       setVantagens(Array.isArray(vantagensCarregadas) ? vantagensCarregadas : []);
@@ -134,8 +370,6 @@ export default function PainelEmpresa() {
       return;
     }
 
-    setSalvando(true);
-
     const payload = {
       empresaId: Number(empresaId),
       nome: formVantagem.nome.trim(),
@@ -143,6 +377,8 @@ export default function PainelEmpresa() {
       valorMoedas,
       quantidadeDisponivel,
     };
+
+    setSalvando(true);
 
     try {
       const response = await fetch("http://localhost:8080/vantagens", {
@@ -175,6 +411,7 @@ export default function PainelEmpresa() {
         });
 
         await carregarDados();
+        setAbaAtiva("vantagens");
       } else {
         toast.error(body.erro || "Erro ao cadastrar vantagem.");
       }
@@ -187,7 +424,9 @@ export default function PainelEmpresa() {
   };
 
   const excluirVantagem = async (vantagemId: number) => {
-    const confirmar = window.confirm("Tem certeza que deseja excluir esta vantagem?");
+    const confirmar = window.confirm(
+      "Tem certeza que deseja excluir esta vantagem?"
+    );
 
     if (!confirmar) return;
 
@@ -227,25 +466,93 @@ export default function PainelEmpresa() {
     );
   };
 
+  const totalVantagens = vantagens.length;
+
+  const totalUnidadesDisponiveis = vantagens.reduce(
+    (total, vantagem) => total + (vantagem.quantidadeDisponivel || 0),
+    0
+  );
+
+  const vantagensAtivas = vantagens.filter(
+    (vantagem) => vantagem.quantidadeDisponivel > 0
+  ).length;
+
+  const vantagensEsgotadas = vantagens.filter(
+    (vantagem) => vantagem.quantidadeDisponivel <= 0
+  ).length;
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center text-emerald-400 font-sans gap-4">
-        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        <p className="font-bold tracking-widest text-xs uppercase">
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#080B0F",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 16,
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            border: `3px solid ${ACCENT_BORDER}`,
+            borderTopColor: ACCENT,
+            borderRadius: "50%",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+
+        <p
+          style={{
+            color: "#4B5563",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            margin: 0,
+          }}
+        >
           Carregando painel da empresa...
         </p>
+
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (!empresa) {
     return (
-      <div className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center text-slate-200 gap-6">
-        <p className="font-bold text-slate-400">Empresa não encontrada.</p>
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#080B0F",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 24,
+        }}
+      >
+        <p style={{ color: "#4B5563", fontWeight: 700, margin: 0 }}>
+          Empresa não encontrada.
+        </p>
 
         <button
           onClick={() => router.push("/")}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl"
+          style={{
+            background: ACCENT,
+            color: "#080B0F",
+            fontWeight: 800,
+            fontSize: 13,
+            letterSpacing: "0.05em",
+            border: "none",
+            borderRadius: 12,
+            padding: "12px 28px",
+            cursor: "pointer",
+          }}
         >
           Voltar
         </button>
@@ -253,140 +560,367 @@ export default function PainelEmpresa() {
     );
   }
 
-  const totalVantagens = vantagens.length;
-  const totalUnidadesDisponiveis = vantagens.reduce(
-    (total, vantagem) => total + (vantagem.quantidadeDisponivel || 0),
-    0
-  );
+  const abas = [
+    { id: "cadastrar", label: "Cadastrar", count: totalVantagens, dot: ACCENT },
+    { id: "vantagens", label: "Vantagens", count: totalVantagens, dot: "#60A5FA" },
+  ] as const;
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-200 p-4 md:p-8 font-sans">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-10">
-          <button
-            onClick={() => router.push("/")}
-            className="text-xs text-slate-500 hover:text-emerald-400 font-bold uppercase mb-4"
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#080B0F",
+        color: "#F9FAFB",
+        fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
+          padding: "16px 32px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          background: "rgba(255,255,255,0.01)",
+        }}
+      >
+        <button
+          onClick={() => router.push("/")}
+          style={{
+            background: "none",
+            border: "1px solid rgba(255,255,255,0.07)",
+            color: "#6B7280",
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            padding: "6px 14px",
+            borderRadius: 8,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          ← Voltar
+        </button>
+
+        <span style={{ color: "rgba(255,255,255,0.08)", fontSize: 16 }}>/</span>
+
+        <span style={{ fontSize: 12, fontWeight: 600, color: "#6B7280" }}>
+          Painel da Empresa
+        </span>
+
+        <span style={{ color: "rgba(255,255,255,0.08)", fontSize: 16 }}>/</span>
+
+        <span style={{ fontSize: 12, fontWeight: 600, color: "#D1D5DB" }}>
+          {empresa.nome}
+        </span>
+      </div>
+
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "40px 32px",
+          display: "grid",
+          gridTemplateColumns: "300px 1fr",
+          gap: 32,
+          alignItems: "start",
+        }}
+      >
+        <aside
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            position: "sticky",
+            top: 32,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 20,
+              padding: 28,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+            }}
           >
-            ← Voltar para cadastros
-          </button>
-
-          <h1 className="text-3xl md:text-4xl font-black text-emerald-400 uppercase tracking-tight">
-            Painel da Empresa
-          </h1>
-
-          <p className="text-slate-500 mt-2">
-            Cadastro e acompanhamento das vantagens oferecidas pela empresa parceira.
-          </p>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <aside className="lg:col-span-1 space-y-6">
-            <div className="bg-[#1e293b] rounded-3xl p-8 border border-slate-800 shadow-2xl">
-              <div className="flex flex-col items-center text-center mb-8">
-                <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4">
-                  <span className="text-4xl font-black text-emerald-400">
-                    {empresa.nome.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-
-                <h2 className="text-xl font-black text-slate-100">
-                  {empresa.nome}
-                </h2>
-
-                <p className="text-sm text-slate-500 break-all mt-1">
-                  {empresa.email}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="bg-[#0f172a] p-4 rounded-2xl border border-slate-800">
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">
-                    CNPJ
-                  </p>
-
-                  <p className="text-sm font-bold text-slate-200">
-                    {formatarCnpj(empresa.cnpj)}
-                  </p>
-                </div>
-
-                <div className="bg-[#0f172a] p-4 rounded-2xl border border-slate-800">
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">
-                    ID da empresa
-                  </p>
-
-                  <p className="text-sm font-bold text-slate-200">
-                    {empresa.id}
-                  </p>
-                </div>
-              </div>
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                background: ACCENT_MUTED,
+                border: `2px solid ${ACCENT_BORDER}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 16,
+              }}
+            >
+              <span style={{ fontSize: 28, fontWeight: 900, color: ACCENT }}>
+                {empresa.nome.charAt(0).toUpperCase()}
+              </span>
             </div>
 
-            <div className="bg-gradient-to-br from-emerald-600 to-blue-500 rounded-3xl p-8 shadow-2xl">
-              <p className="text-xs text-emerald-100 uppercase font-black tracking-widest mb-2">
-                Vantagens cadastradas
-              </p>
+            <h1
+              style={{
+                margin: "0 0 4px",
+                fontSize: 18,
+                fontWeight: 800,
+                color: "#F9FAFB",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {empresa.nome}
+            </h1>
 
-              <p className="text-5xl font-black text-white">
-                {totalVantagens}
-              </p>
+            <p
+              style={{
+                margin: "0 0 16px",
+                fontSize: 12,
+                color: "#4B5563",
+                wordBreak: "break-all",
+              }}
+            >
+              {empresa.email}
+            </p>
 
-              <p className="text-sm text-emerald-100 mt-1">
-                vantagens disponíveis no sistema
-              </p>
-            </div>
+            <Tag color="green">Empresa parceira</Tag>
+          </div>
 
-            <div className="bg-[#1e293b] rounded-3xl p-6 border border-slate-800 shadow-2xl">
-              <p className="text-xs text-slate-500 uppercase font-black tracking-widest mb-2">
-                Unidades disponíveis
-              </p>
+          <div
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(198,241,53,0.08) 0%, rgba(198,241,53,0.03) 100%)",
+              border: `1px solid ${ACCENT_BORDER}`,
+              borderRadius: 20,
+              padding: 28,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: ACCENT,
+                display: "block",
+                marginBottom: 8,
+              }}
+            >
+              Unidades disponíveis
+            </span>
 
-              <p className="text-4xl font-black text-blue-400">
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span
+                style={{
+                  fontSize: 48,
+                  fontWeight: 900,
+                  color: ACCENT,
+                  lineHeight: 1,
+                  letterSpacing: "-0.04em",
+                }}
+              >
                 {totalUnidadesDisponiveis}
-              </p>
+              </span>
 
-              <p className="text-sm text-slate-500 mt-1">
-                total de resgates possíveis
-              </p>
+              <span
+                style={{
+                  fontSize: 13,
+                  color: "rgba(198,241,53,0.5)",
+                  fontWeight: 600,
+                }}
+              >
+                resgates
+              </span>
             </div>
-          </aside>
+          </div>
 
-          <main className="lg:col-span-3 space-y-8">
-            <section className="bg-[#1e293b] rounded-3xl p-6 md:p-8 border border-slate-800 shadow-2xl">
-              <div className="mb-8">
-                <h2 className="text-2xl font-black text-slate-100 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  Cadastrar Vantagem
-                </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <StatCard label="Vantagens" value={totalVantagens} />
+            <StatCard label="Ativas" value={vantagensAtivas} />
+            <StatCard label="Esgotadas" value={vantagensEsgotadas} />
+            <StatCard label="ID" value={empresa.id} />
+          </div>
 
-                <p className="text-sm text-slate-500 mt-1">
-                  Defina o nome, descrição, valor em moedas e quantidade disponível.
-                </p>
-              </div>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 20,
+              padding: 24,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#4B5563",
+                display: "block",
+                marginBottom: 12,
+              }}
+            >
+              Informações
+            </span>
 
-              <form onSubmit={cadastrarVantagem} className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <InfoRow label="CNPJ" value={formatarCnpj(empresa.cnpj)} />
+            <InfoRow label="E-mail" value={empresa.email} />
+            <InfoRow label="Vantagens" value={`${totalVantagens}`} />
+          </div>
+        </aside>
+
+        <main>
+          <div
+            style={{
+              display: "flex",
+              gap: 4,
+              marginBottom: 28,
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 14,
+              padding: 4,
+            }}
+          >
+            {abas.map((aba) => (
+              <button
+                key={aba.id}
+                onClick={() => setAbaAtiva(aba.id)}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "10px 16px",
+                  borderRadius: 10,
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
+                  background:
+                    abaAtiva === aba.id ? "rgba(255,255,255,0.06)" : "transparent",
+                  color: abaAtiva === aba.id ? "#F9FAFB" : "#4B5563",
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: aba.dot,
+                    display: "inline-block",
+                    opacity: abaAtiva === aba.id ? 1 : 0.4,
+                    boxShadow: abaAtiva === aba.id ? `0 0 6px ${aba.dot}88` : "none",
+                  }}
+                />
+
+                {aba.label}
+
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    background:
+                      abaAtiva === aba.id
+                        ? "rgba(255,255,255,0.08)"
+                        : "rgba(255,255,255,0.03)",
+                    color: abaAtiva === aba.id ? "#9CA3AF" : "#374151",
+                    padding: "1px 7px",
+                    borderRadius: 99,
+                  }}
+                >
+                  {aba.count}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {abaAtiva === "cadastrar" && (
+            <section>
+              <SectionHeader
+                dot={ACCENT}
+                title="Cadastrar vantagem"
+                subtitle="Defina o benefício, valor em moedas e quantidade disponível."
+              />
+
+              <form
+                onSubmit={cadastrarVantagem}
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: 18,
+                  padding: 24,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      color: "#4B5563",
+                      display: "block",
+                      marginBottom: 8,
+                    }}
+                  >
+                    Nome da vantagem
+                  </label>
+
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Desconto de 10%"
+                    value={formVantagem.nome}
+                    onChange={(event) =>
+                      setFormVantagem({
+                        ...formVantagem,
+                        nome: event.target.value,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      background: "#0D1117",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "#D1D5DB",
+                      padding: "14px 16px",
+                      borderRadius: 12,
+                      outline: "none",
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 16,
+                  }}
+                >
                   <div>
-                    <label className="text-xs text-slate-500 uppercase font-black tracking-widest block mb-2">
-                      Nome da vantagem
-                    </label>
-
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ex: Desconto de 10%"
-                      value={formVantagem.nome}
-                      onChange={(event) =>
-                        setFormVantagem({
-                          ...formVantagem,
-                          nome: event.target.value,
-                        })
-                      }
-                      className="w-full bg-[#0f172a] border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-slate-500 uppercase font-black tracking-widest block mb-2">
+                    <label
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        color: "#4B5563",
+                        display: "block",
+                        marginBottom: 8,
+                      }}
+                    >
                       Valor em moedas
                     </label>
 
@@ -402,34 +936,70 @@ export default function PainelEmpresa() {
                           valorMoedas: event.target.value,
                         })
                       }
-                      className="w-full bg-[#0f172a] border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                      style={{
+                        width: "100%",
+                        background: "#0D1117",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        color: "#D1D5DB",
+                        padding: "14px 16px",
+                        borderRadius: 12,
+                        outline: "none",
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        color: "#4B5563",
+                        display: "block",
+                        marginBottom: 8,
+                      }}
+                    >
+                      Quantidade disponível
+                    </label>
+
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      placeholder="Ex: 5"
+                      value={formVantagem.quantidadeDisponivel}
+                      onChange={(event) =>
+                        setFormVantagem({
+                          ...formVantagem,
+                          quantidadeDisponivel: event.target.value,
+                        })
+                      }
+                      style={{
+                        width: "100%",
+                        background: "#0D1117",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        color: "#D1D5DB",
+                        padding: "14px 16px",
+                        borderRadius: 12,
+                        outline: "none",
+                      }}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-500 uppercase font-black tracking-widest block mb-2">
-                    Quantidade disponível
-                  </label>
-
-                  <input
-                    type="number"
-                    min={1}
-                    required
-                    placeholder="Ex: 5"
-                    value={formVantagem.quantidadeDisponivel}
-                    onChange={(event) =>
-                      setFormVantagem({
-                        ...formVantagem,
-                        quantidadeDisponivel: event.target.value,
-                      })
-                    }
-                    className="w-full bg-[#0f172a] border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs text-slate-500 uppercase font-black tracking-widest block mb-2">
+                  <label
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      color: "#4B5563",
+                      display: "block",
+                      marginBottom: 8,
+                    }}
+                  >
                     Descrição
                   </label>
 
@@ -444,139 +1014,278 @@ export default function PainelEmpresa() {
                       })
                     }
                     rows={5}
-                    className="w-full bg-[#0f172a] border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all resize-none"
+                    style={{
+                      width: "100%",
+                      background: "#0D1117",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "#D1D5DB",
+                      padding: "14px 16px",
+                      borderRadius: 12,
+                      outline: "none",
+                      resize: "none",
+                    }}
                   />
                 </div>
 
                 <button
                   disabled={salvando}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2"
+                  style={{
+                    width: "100%",
+                    padding: "13px 0",
+                    borderRadius: 12,
+                    border: "none",
+                    cursor: salvando ? "not-allowed" : "pointer",
+                    fontSize: 12,
+                    fontWeight: 900,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    background: salvando ? "rgba(255,255,255,0.04)" : ACCENT,
+                    color: salvando ? "#374151" : "#080B0F",
+                  }}
                 >
                   {salvando ? (
                     <>
-                      <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      CADASTRANDO...
+                      <span
+                        style={{
+                          width: 14,
+                          height: 14,
+                          border: "2px solid rgba(8,11,15,0.3)",
+                          borderTopColor: "#080B0F",
+                          borderRadius: "50%",
+                          display: "inline-block",
+                          animation: "spin 0.8s linear infinite",
+                        }}
+                      />
+                      Cadastrando...
                     </>
                   ) : (
-                    "CADASTRAR VANTAGEM"
+                    "Cadastrar vantagem"
                   )}
                 </button>
               </form>
             </section>
+          )}
 
-            <section className="bg-[#1e293b] rounded-3xl p-6 md:p-8 border border-slate-800 shadow-2xl">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                <div>
-                  <h2 className="text-2xl font-black text-slate-100 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full" />
-                    Vantagens da Empresa
-                  </h2>
+          {abaAtiva === "vantagens" && (
+            <section>
+              <SectionHeader
+                dot="#60A5FA"
+                title="Vantagens cadastradas"
+                subtitle="Lista de benefícios cadastrados por esta empresa parceira."
+                count={vantagens.length}
+              />
 
-                  <p className="text-sm text-slate-500 mt-1">
-                    Lista de vantagens cadastradas por esta empresa.
-                  </p>
-                </div>
-
-                <div className="bg-[#0f172a] border border-slate-800 rounded-2xl px-5 py-3">
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">
-                    Total
-                  </p>
-
-                  <p className="text-xl font-black text-blue-400">
-                    {vantagens.length}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 12,
+                }}
+              >
                 {vantagens.map((vantagem) => {
                   const esgotada = vantagem.quantidadeDisponivel <= 0;
 
                   return (
                     <div
                       key={vantagem.id}
-                      className={`bg-[#0f172a] rounded-2xl border p-5 transition-all ${
-                        esgotada
-                          ? "border-red-500/30"
-                          : "border-slate-800 hover:border-emerald-500/40"
-                      }`}
+                      style={{
+                        background: "rgba(255,255,255,0.02)",
+                        border: `1px solid ${
+                          esgotada
+                            ? "rgba(248,113,113,0.2)"
+                            : "rgba(255,255,255,0.06)"
+                        }`,
+                        borderRadius: 18,
+                        padding: 20,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 12,
+                      }}
                     >
-                      <div className="flex justify-between items-start gap-4 mb-4">
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 12,
+                        }}
+                      >
                         <div>
-                          <p className="text-xs text-slate-500 uppercase font-black tracking-widest mb-1">
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              letterSpacing: "0.1em",
+                              textTransform: "uppercase",
+                              color: "#374151",
+                              display: "block",
+                              marginBottom: 4,
+                            }}
+                          >
                             Vantagem
-                          </p>
+                          </span>
 
-                          <h3 className="text-lg font-black text-slate-100">
+                          <h3
+                            style={{
+                              margin: 0,
+                              fontSize: 15,
+                              fontWeight: 800,
+                              color: "#F9FAFB",
+                              lineHeight: 1.3,
+                            }}
+                          >
                             {vantagem.nome}
                           </h3>
                         </div>
 
-                        <span className="shrink-0 bg-blue-500/10 text-blue-400 text-xs font-black px-4 py-2 rounded-full border border-blue-500/20">
-                          {vantagem.valorMoedas} moedas
-                        </span>
+                        <Tag color="blue">{vantagem.valorMoedas}m</Tag>
                       </div>
 
-                      <p className="text-sm text-slate-400 leading-relaxed mb-5">
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 12,
+                          color: "#6B7280",
+                          lineHeight: 1.6,
+                        }}
+                      >
                         {vantagem.descricao}
                       </p>
 
-                      <div className="grid grid-cols-2 gap-3 mb-5">
-                        <div className="bg-[#1e293b]/70 p-4 rounded-xl border border-slate-800">
-                          <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">
-                            Disponíveis
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            background: "rgba(255,255,255,0.03)",
+                            border: "1px solid rgba(255,255,255,0.06)",
+                            borderRadius: 12,
+                            padding: 12,
+                          }}
+                        >
+                          <p
+                            style={{
+                              margin: "0 0 4px",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              letterSpacing: "0.08em",
+                              textTransform: "uppercase",
+                              color: "#374151",
+                            }}
+                          >
+                            Estoque
                           </p>
 
                           <p
-                            className={`text-2xl font-black ${
-                              esgotada ? "text-red-400" : "text-emerald-400"
-                            }`}
+                            style={{
+                              margin: 0,
+                              fontSize: 22,
+                              fontWeight: 900,
+                              color: esgotada ? "#F87171" : ACCENT,
+                            }}
                           >
                             {vantagem.quantidadeDisponivel}
                           </p>
                         </div>
 
-                        <div className="bg-[#1e293b]/70 p-4 rounded-xl border border-slate-800">
-                          <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">
+                        <div
+                          style={{
+                            background: "rgba(255,255,255,0.03)",
+                            border: "1px solid rgba(255,255,255,0.06)",
+                            borderRadius: 12,
+                            padding: 12,
+                          }}
+                        >
+                          <p
+                            style={{
+                              margin: "0 0 4px",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              letterSpacing: "0.08em",
+                              textTransform: "uppercase",
+                              color: "#374151",
+                            }}
+                          >
                             Status
                           </p>
 
-                          <p
-                            className={`text-sm font-black uppercase ${
-                              esgotada ? "text-red-400" : "text-emerald-400"
-                            }`}
-                          >
-                            {esgotada ? "Esgotada" : "Ativa"}
-                          </p>
+                          <div>
+                            <Tag color={esgotada ? "red" : "green"}>
+                              {esgotada ? "Esgotada" : "Ativa"}
+                            </Tag>
+                          </div>
                         </div>
                       </div>
 
                       <button
                         onClick={() => excluirVantagem(vantagem.id)}
-                        className="w-full py-3 rounded-xl font-black text-sm transition-all bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"
+                        style={{
+                          width: "100%",
+                          padding: "11px 0",
+                          borderRadius: 12,
+                          border: "1px solid rgba(248,113,113,0.2)",
+                          cursor: "pointer",
+                          fontSize: 12,
+                          fontWeight: 800,
+                          letterSpacing: "0.07em",
+                          textTransform: "uppercase",
+                          background: "rgba(248,113,113,0.08)",
+                          color: "#F87171",
+                        }}
                       >
-                        EXCLUIR VANTAGEM
+                        Excluir vantagem
                       </button>
                     </div>
                   );
                 })}
 
                 {vantagens.length === 0 && (
-                  <div className="md:col-span-2 text-center py-20">
-                    <p className="text-slate-600 font-black uppercase text-sm">
+                  <div
+                    style={{
+                      gridColumn: "1 / -1",
+                      textAlign: "center",
+                      padding: "80px 0",
+                    }}
+                  >
+                    <p
+                      style={{
+                        color: "#1F2937",
+                        fontWeight: 800,
+                        fontSize: 13,
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        margin: 0,
+                      }}
+                    >
                       Nenhuma vantagem cadastrada
                     </p>
 
-                    <p className="text-slate-700 text-sm mt-2">
-                      Cadastre uma vantagem para ela aparecer para os alunos.
+                    <p style={{ color: "#374151", fontSize: 12, marginTop: 8 }}>
+                      Cadastre uma vantagem para ela aparecer aos alunos.
                     </p>
                   </div>
                 )}
               </div>
             </section>
-          </main>
-        </div>
+          )}
+        </main>
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+      `}</style>
     </div>
   );
 }

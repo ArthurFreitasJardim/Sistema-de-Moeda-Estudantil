@@ -1,0 +1,33 @@
+@startuml
+title UC05 - Cadastrar Vantagem
+
+actor "Empresa Parceira" as E
+boundary "Painel da Empresa\nNext.js" as Front
+control "VantagemController\nMicronaut" as Ctrl
+control "EmpresaRepository" as EmpRepo
+control "VantagemRepository" as VantRepo
+database "PostgreSQL" as DB
+
+E -> Front: Preenche nome, descrição, valor e quantidade
+Front -> Front: Valida campos obrigatórios e números > 0
+Front -> Ctrl: POST /vantagens\n{empresaId,nome,descricao,valorMoedas,quantidadeDisponivel}
+Ctrl -> EmpRepo: findById(empresaId)
+EmpRepo -> DB: SELECT empresa WHERE id = ?
+
+alt Empresa encontrada
+    DB --> EmpRepo: Empresa
+    EmpRepo --> Ctrl: Empresa
+    Ctrl -> VantRepo: save(vantagem)
+    VantRepo -> DB: INSERT vantagem
+    DB --> VantRepo: Vantagem salva
+    VantRepo --> Ctrl: Vantagem
+    Ctrl --> Front: 201 Created\nVantagemResponse
+    Front --> E: Toast de sucesso e atualiza lista
+else Empresa não encontrada
+    DB --> EmpRepo: vazio
+    EmpRepo --> Ctrl: vazio
+    Ctrl --> Front: 400 {erro: Empresa não encontrada}
+    Front --> E: Toast de erro
+end
+
+@enduml

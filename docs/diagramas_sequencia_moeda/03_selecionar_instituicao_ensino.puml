@@ -1,0 +1,29 @@
+@startuml
+title UC03 - Selecionar Instituição de Ensino
+
+actor Aluno as A
+boundary "Formulário de Cadastro\nNext.js" as Front
+control "AlunoController\nMicronaut" as Ctrl
+control "InstituicaoRepository" as Repo
+database "PostgreSQL" as DB
+
+A -> Front: Informa o nome da instituição
+Front -> Ctrl: Envia instituição junto ao cadastro
+Ctrl -> Repo: findByNome(instituicaoNome)
+Repo -> DB: SELECT instituicao WHERE nome = ?
+
+alt Instituição encontrada
+    DB --> Repo: Instituição
+    Repo --> Ctrl: Usa instituição existente
+else Instituição não encontrada
+    DB --> Repo: vazio
+    Ctrl -> Repo: save(novaInstituicao)
+    Repo -> DB: INSERT instituicao
+    DB --> Repo: Instituição criada
+    Repo --> Ctrl: Usa nova instituição
+end
+
+Ctrl --> Front: Instituição associada ao aluno
+Front --> A: Cadastro continua normalmente
+
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+title UC07 - Gerar Código do Cupom
+
+actor Aluno as A
+boundary "Perfil do Aluno\nNext.js" as Front
+control "ResgateVantagemController\nMicronaut" as Ctrl
+control "CupomService" as CupomService
+database "PostgreSQL" as DB
+
+A -> Front: Confirma resgate da vantagem
+Front -> Ctrl: POST /resgates
+Ctrl -> Ctrl: Valida aluno, vantagem, saldo e estoque
+Ctrl -> CupomService: gerarCodigoCupom(resgate)
+CupomService -> CupomService: Gera código único
+CupomService --> Ctrl: Código do cupom
+Ctrl -> DB: Salva resgate com código do cupom
+DB --> Ctrl: Resgate salvo
+Ctrl --> Front: 201 Created\n{resgate, codigoCupom}
+Front --> A: Exibe confirmação do resgate
+
+@enduml

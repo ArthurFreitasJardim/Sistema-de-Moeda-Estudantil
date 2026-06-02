@@ -1,0 +1,23 @@
+@startuml
+title UC12 - Informar Motivo do Envio
+
+actor Professor as P
+boundary "Painel do Professor\nNext.js" as Front
+control "TransacaoController\nMicronaut" as Ctrl
+database "PostgreSQL" as DB
+
+P -> Front: Digita o motivo do reconhecimento
+Front -> Front: Valida motivo obrigatório
+
+alt Motivo vazio
+    Front --> P: Toast de aviso\nInforme o motivo do envio
+else Motivo preenchido
+    Front -> Ctrl: POST /transacoes\n{motivo, valor, remetenteId, destinatarioId}
+    Ctrl -> Ctrl: Valida motivo não nulo e não vazio
+    Ctrl -> DB: INSERT transacao com motivo
+    DB --> Ctrl: Transação salva
+    Ctrl --> Front: 201 Created
+    Front --> P: Toast de sucesso
+end
+
+@enduml

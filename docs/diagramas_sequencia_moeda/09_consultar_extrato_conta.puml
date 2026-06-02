@@ -1,0 +1,31 @@
+@startuml
+title UC09 - Consultar Extrato da Conta
+
+actor Aluno as A
+actor Professor as P
+boundary "Tela de Perfil/Painel\nNext.js" as Front
+control "TransacaoController\nMicronaut" as Ctrl
+control "TransacaoRepository" as Repo
+database "PostgreSQL" as DB
+
+alt Consulta pelo aluno
+    A -> Front: Acessa perfil do aluno
+    Front -> Ctrl: GET /transacoes/aluno/{alunoId}
+    Ctrl -> Repo: findByDestinatarioId(alunoId)
+    Repo -> DB: SELECT transacoes recebidas
+    DB --> Repo: Lista de transações
+    Repo --> Ctrl: Transações
+    Ctrl --> Front: 200 OK\nTransacaoExtratoResponse[]
+    Front --> A: Exibe extrato de moedas recebidas
+else Consulta pelo professor
+    P -> Front: Acessa painel do professor
+    Front -> Ctrl: GET /transacoes/professor/{professorId}
+    Ctrl -> Repo: findByRemetenteId(professorId)
+    Repo -> DB: SELECT transacoes enviadas
+    DB --> Repo: Lista de transações
+    Repo --> Ctrl: Transações
+    Ctrl --> Front: 200 OK\nTransacaoProfessorResponse[]
+    Front --> P: Exibe histórico de envios
+end
+
+@enduml

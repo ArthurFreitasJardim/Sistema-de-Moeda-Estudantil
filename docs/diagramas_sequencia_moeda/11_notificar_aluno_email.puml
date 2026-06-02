@@ -1,0 +1,40 @@
+@startuml
+title UC11 - Notificar Aluno por E-mail
+
+queue "RabbitMQ\nFila: moedas.email" as Rabbit
+control "EmailConsumer\nMicronaut" as Consumer
+control "TransacaoRepository" as TransRepo
+control "ProfessorRepository" as ProfRepo
+control "AlunoRepository" as AlunoRepo
+control "EmailService" as EmailService
+database "PostgreSQL" as DB
+actor "Sistema de E-mail" as Mail
+actor Aluno as A
+
+Rabbit -> Consumer: Entrega EnvioMoedasEvent\n{transacaoId, professorId, alunoId}
+Consumer -> TransRepo: findById(transacaoId)
+TransRepo -> DB: SELECT transacao
+DB --> TransRepo: Transação
+TransRepo --> Consumer: Transação
+
+Consumer -> ProfRepo: findById(professorId)
+ProfRepo -> DB: SELECT professor
+DB --> ProfRepo: Professor
+ProfRepo --> Consumer: Professor
+
+Consumer -> AlunoRepo: findById(alunoId)
+AlunoRepo -> DB: SELECT aluno
+DB --> AlunoRepo: Aluno
+AlunoRepo --> Consumer: Aluno
+
+alt Dados completos
+    Consumer -> EmailService: enviarConfirmacaoRecebimentoParaAluno(professor, aluno, transacao)
+    EmailService -> Mail: SMTP Gmail\nE-mail de recebimento
+    Mail --> A: E-mail entregue
+    Mail --> EmailService: Envio confirmado
+    Consumer -> Rabbit: ACK
+else Dados incompletos
+    Consumer -> Rabbit: Registra falha/descarta ou reprocessa
+end
+
+@enduml

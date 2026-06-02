@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -18,6 +18,249 @@ type Empresa = {
   cnpj: string;
 };
 
+const ACCENT = "#C6F135";
+const ACCENT_MUTED = "rgba(198,241,53,0.12)";
+const ACCENT_BORDER = "rgba(198,241,53,0.25)";
+
+function Tag({
+  children,
+  color = "default",
+}: {
+  children: React.ReactNode;
+  color?: "green" | "blue" | "red" | "purple" | "default";
+}) {
+  const styles: Record<string, React.CSSProperties> = {
+    green: {
+      background: "rgba(198,241,53,0.12)",
+      color: ACCENT,
+      border: `1px solid ${ACCENT_BORDER}`,
+    },
+    blue: {
+      background: "rgba(96,165,250,0.1)",
+      color: "#60A5FA",
+      border: "1px solid rgba(96,165,250,0.2)",
+    },
+    red: {
+      background: "rgba(248,113,113,0.1)",
+      color: "#F87171",
+      border: "1px solid rgba(248,113,113,0.2)",
+    },
+    purple: {
+      background: "rgba(168,130,255,0.1)",
+      color: "#A882FF",
+      border: "1px solid rgba(168,130,255,0.2)",
+    },
+    default: {
+      background: "rgba(255,255,255,0.05)",
+      color: "#9CA3AF",
+      border: "1px solid rgba(255,255,255,0.08)",
+    },
+  };
+
+  return (
+    <span
+      style={{
+        ...styles[color],
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        padding: "3px 10px",
+        borderRadius: 99,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: React.ReactNode;
+  sub?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        background: accent ? ACCENT_MUTED : "rgba(255,255,255,0.03)",
+        border: `1px solid ${accent ? ACCENT_BORDER : "rgba(255,255,255,0.07)"}`,
+        borderRadius: 16,
+        padding: "20px 24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: accent ? ACCENT : "#6B7280",
+        }}
+      >
+        {label}
+      </span>
+
+      <span
+        style={{
+          fontSize: 32,
+          fontWeight: 800,
+          color: accent ? ACCENT : "#F9FAFB",
+          lineHeight: 1.1,
+        }}
+      >
+        {value}
+      </span>
+
+      {sub && (
+        <span style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>
+          {sub}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function SectionHeader({
+  dot,
+  title,
+  subtitle,
+  count,
+}: {
+  dot: string;
+  title: string;
+  subtitle: string;
+  count?: number;
+}) {
+  return (
+    <div
+      style={{
+        marginBottom: 24,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+        gap: 16,
+      }}
+    >
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 4,
+          }}
+        >
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: dot,
+              display: "inline-block",
+              boxShadow: `0 0 8px ${dot}88`,
+            }}
+          />
+
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 18,
+              fontWeight: 800,
+              color: "#F9FAFB",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {title}
+          </h2>
+        </div>
+
+        <p style={{ margin: 0, fontSize: 13, color: "#4B5563" }}>
+          {subtitle}
+        </p>
+      </div>
+
+      {count !== undefined && (
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            color: "#4B5563",
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.07)",
+            borderRadius: 8,
+            padding: "4px 12px",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {count} {count === 1 ? "item" : "itens"}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function TextInput({
+  label,
+  placeholder,
+  value,
+  type = "text",
+  onChange,
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  type?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <label
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: "#4B5563",
+          display: "block",
+          marginBottom: 8,
+        }}
+      >
+        {label}
+      </label>
+
+      <input
+        type={type}
+        required
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          width: "100%",
+          background: "#0D1117",
+          border: "1px solid rgba(255,255,255,0.08)",
+          color: "#D1D5DB",
+          padding: "14px 16px",
+          borderRadius: 12,
+          outline: "none",
+        }}
+      />
+    </div>
+  );
+}
+
 export default function Home() {
   const router = useRouter();
 
@@ -25,6 +268,8 @@ export default function Home() {
 
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [salvando, setSalvando] = useState(false);
 
   const [formAluno, setFormAluno] = useState({
     nome: "",
@@ -47,22 +292,40 @@ export default function Home() {
     carregarDados();
   }, []);
 
-  const carregarDados = () => {
-    fetch("http://localhost:8080/alunos", { cache: "no-store" })
-      .then(res => res.json())
-      .then(data => setAlunos(Array.isArray(data) ? data : []))
-      .catch(() => setAlunos([]));
+  const carregarDados = async () => {
+    setLoading(true);
 
-    fetch("http://localhost:8080/empresas", { cache: "no-store" })
-      .then(res => res.json())
-      .then(data => setEmpresas(Array.isArray(data) ? data : []))
-      .catch(() => setEmpresas([]));
+    try {
+      const [alunosResponse, empresasResponse] = await Promise.all([
+        fetch("http://localhost:8080/alunos", {
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        }),
+        fetch("http://localhost:8080/empresas", {
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        }),
+      ]);
+
+      const alunosData = alunosResponse.ok ? await alunosResponse.json() : [];
+      const empresasData = empresasResponse.ok ? await empresasResponse.json() : [];
+
+      setAlunos(Array.isArray(alunosData) ? alunosData : []);
+      setEmpresas(Array.isArray(empresasData) ? empresasData : []);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      toast.error("Erro ao carregar cadastros.");
+      setAlunos([]);
+      setEmpresas([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const somenteNumeros = (valor: string) => valor.replace(/\D/g, "");
 
-  const cadastrarAluno = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const cadastrarAluno = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     const payload = {
       nome: formAluno.nome.trim(),
@@ -74,10 +337,10 @@ export default function Home() {
       senha: formAluno.senha,
     };
 
-    console.log("ENVIANDO ALUNO:", payload);
+    setSalvando(true);
 
     try {
-      const res = await fetch("http://localhost:8080/alunos", {
+      const response = await fetch("http://localhost:8080/alunos", {
         method: "POST",
         cache: "no-store",
         headers: {
@@ -87,18 +350,18 @@ export default function Home() {
         body: JSON.stringify(payload),
       });
 
-      const texto = await res.text();
-      console.log("STATUS:", res.status);
-      console.log("RESPOSTA DO BACKEND:", texto);
+      const text = await response.text();
 
       let body: any = {};
       try {
-        body = texto ? JSON.parse(texto) : {};
+        body = text ? JSON.parse(text) : {};
       } catch {
-        body = { erro: texto };
+        body = { erro: text };
       }
 
-      if (res.ok) {
+      if (response.ok) {
+        toast.success("Aluno cadastrado com sucesso!");
+
         setFormAluno({
           nome: "",
           email: "",
@@ -108,18 +371,23 @@ export default function Home() {
           instituicaoNome: "",
           senha: "123",
         });
-        carregarDados();
+
+        await carregarDados();
       } else {
-        toast.error(`Erro ao cadastrar aluno: ${body.erro || body.message || texto || "Erro desconhecido"}`);
+        toast.error(
+          body.erro || body.message || text || "Erro ao cadastrar aluno."
+        );
       }
     } catch (error) {
       console.error("Erro ao cadastrar aluno:", error);
       toast.error("Erro ao comunicar com o back-end.");
+    } finally {
+      setSalvando(false);
     }
   };
 
-  const cadastrarEmpresa = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const cadastrarEmpresa = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     const payload = {
       nome: formEmpresa.nome.trim(),
@@ -128,10 +396,10 @@ export default function Home() {
       senha: formEmpresa.senha,
     };
 
-    console.log("ENVIANDO EMPRESA:", payload);
+    setSalvando(true);
 
     try {
-      const res = await fetch("http://localhost:8080/empresas", {
+      const response = await fetch("http://localhost:8080/empresas", {
         method: "POST",
         cache: "no-store",
         headers: {
@@ -141,45 +409,59 @@ export default function Home() {
         body: JSON.stringify(payload),
       });
 
-      const texto = await res.text();
-      console.log("STATUS:", res.status);
-      console.log("RESPOSTA DO BACKEND:", texto);
+      const text = await response.text();
 
       let body: any = {};
       try {
-        body = texto ? JSON.parse(texto) : {};
+        body = text ? JSON.parse(text) : {};
       } catch {
-        body = { erro: texto };
+        body = { erro: text };
       }
 
-      if (res.ok) {
+      if (response.ok) {
+        toast.success("Empresa cadastrada com sucesso!");
+
         setFormEmpresa({
           nome: "",
           email: "",
           cnpj: "",
           senha: "123",
         });
-        carregarDados();
+
+        await carregarDados();
       } else {
-        toast.error(`Erro ao cadastrar empresa: ${body.erro || body.message || texto || "Erro desconhecido"}`);
+        toast.error(
+          body.erro || body.message || text || "Erro ao cadastrar empresa."
+        );
       }
     } catch (error) {
       console.error("Erro ao cadastrar empresa:", error);
       toast.error("Erro ao comunicar com o back-end.");
+    } finally {
+      setSalvando(false);
     }
   };
 
   const excluirItem = async (tipo: "alunos" | "empresas", id: number) => {
-    if (confirm("Tem certeza que deseja excluir este registro?")) {
-      const res = await fetch(`http://localhost:8080/${tipo}/${id}`, {
+    const confirmar = window.confirm("Tem certeza que deseja excluir este registro?");
+
+    if (!confirmar) return;
+
+    try {
+      const response = await fetch(`http://localhost:8080/${tipo}/${id}`, {
         method: "DELETE",
+        cache: "no-store",
       });
 
-      if (res.ok) {
-        carregarDados();
+      if (response.ok) {
+        toast.success("Registro excluído com sucesso.");
+        await carregarDados();
       } else {
         toast.error("Erro ao excluir.");
       }
+    } catch (error) {
+      console.error("Erro ao excluir:", error);
+      toast.error("Erro ao comunicar com o back-end.");
     }
   };
 
@@ -191,162 +473,448 @@ export default function Home() {
     router.push(`/aluno/${alunoId}`);
   };
 
+  const formatarCnpj = (cnpj: string) => {
+    if (!cnpj) return "Não informado";
+
+    const somenteNumerosCnpj = cnpj.replace(/\D/g, "");
+
+    if (somenteNumerosCnpj.length !== 14) {
+      return cnpj;
+    }
+
+    return somenteNumerosCnpj.replace(
+      /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
+      "$1.$2.$3/$4-$5"
+    );
+  };
+
+  const totalCadastros = alunos.length + empresas.length;
+
+  const abas = [
+    { id: "aluno", label: "Aluno", count: alunos.length, dot: ACCENT },
+    { id: "empresa", label: "Empresa", count: empresas.length, dot: "#60A5FA" },
+  ] as const;
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#080B0F",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 16,
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            border: `3px solid ${ACCENT_BORDER}`,
+            borderTopColor: ACCENT,
+            borderRadius: "50%",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+
+        <p
+          style={{
+            color: "#4B5563",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            margin: 0,
+          }}
+        >
+          Carregando cadastros...
+        </p>
+
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-200 p-4 md:p-12 font-sans">
-      <div className="max-w-6xl mx-auto">
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#080B0F",
+        color: "#F9FAFB",
+        fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
+          padding: "16px 32px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          background: "rgba(255,255,255,0.01)",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 800,
+            color: ACCENT,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}
+        >
+          Sistema de Moedas
+        </span>
 
-        <header className="mb-12 text-center">
-          <h1 className="text-5xl font-black tracking-tighter bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent inline-block">
-            SISTEMA DE MOEDAS
-          </h1>
-          <p className="text-slate-500 mt-2 font-medium">
-            Laboratório de Desenvolvimento de Software - Sprint 02
-          </p>
-        </header>
+        <span style={{ color: "rgba(255,255,255,0.08)", fontSize: 16 }}>/</span>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <span style={{ fontSize: 12, fontWeight: 600, color: "#6B7280" }}>
+          Cadastros
+        </span>
+      </div>
 
-          <div className="lg:col-span-1 bg-[#1e293b] rounded-3xl p-8 border border-slate-800 shadow-2xl h-fit">
-            <div className="flex p-1 bg-[#0f172a] rounded-xl mb-8">
-              <button
-                onClick={() => setAbaAtiva("aluno")}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${abaAtiva === "aluno"
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-500 hover:text-slate-300"
-                  }`}
-              >
-                ALUNO
-              </button>
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "40px 32px",
+          display: "grid",
+          gridTemplateColumns: "300px 1fr",
+          gap: 32,
+          alignItems: "start",
+        }}
+      >
+        <aside
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            position: "sticky",
+            top: 32,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 20,
+              padding: 28,
+            }}
+          >
+            <Tag color="green">Sprint 02</Tag>
 
-              <button
-                onClick={() => setAbaAtiva("empresa")}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${abaAtiva === "empresa"
-                    ? "bg-emerald-600 text-white shadow-lg"
-                    : "text-slate-500 hover:text-slate-300"
-                  }`}
-              >
-                EMPRESA
-              </button>
-            </div>
+            <h1
+              style={{
+                margin: "16px 0 8px",
+                fontSize: 26,
+                fontWeight: 900,
+                color: "#F9FAFB",
+                letterSpacing: "-0.04em",
+                lineHeight: 1.05,
+              }}
+            >
+              Sistema de Moedas Estudantil
+            </h1>
 
-            {abaAtiva === "aluno" ? (
-              <form onSubmit={cadastrarAluno} className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Nome"
-                  required
-                  value={formAluno.nome}
-                  onChange={e => setFormAluno({ ...formAluno, nome: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                />
-
-                <input
-                  type="email"
-                  placeholder="E-mail"
-                  required
-                  value={formAluno.email}
-                  onChange={e => setFormAluno({ ...formAluno, email: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                />
-
-                <input
-                  type="text"
-                  placeholder="CPF"
-                  required
-                  value={formAluno.cpf}
-                  onChange={e => setFormAluno({ ...formAluno, cpf: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                />
-
-                <input
-                  type="text"
-                  placeholder="RG"
-                  required
-                  value={formAluno.rg}
-                  onChange={e => setFormAluno({ ...formAluno, rg: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                />
-
-                <input
-                  type="text"
-                  placeholder="Curso"
-                  required
-                  value={formAluno.curso}
-                  onChange={e => setFormAluno({ ...formAluno, curso: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                />
-
-                <input
-                  type="text"
-                  placeholder="Instituição"
-                  required
-                  value={formAluno.instituicaoNome}
-                  onChange={e => setFormAluno({ ...formAluno, instituicaoNome: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                />
-
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-blue-900/20">
-                  CADASTRAR ALUNO
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={cadastrarEmpresa} className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Razão Social"
-                  required
-                  value={formEmpresa.nome}
-                  onChange={e => setFormEmpresa({ ...formEmpresa, nome: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                />
-
-                <input
-                  type="email"
-                  placeholder="E-mail Corporativo"
-                  required
-                  value={formEmpresa.email}
-                  onChange={e => setFormEmpresa({ ...formEmpresa, email: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                />
-
-                <input
-                  type="text"
-                  placeholder="CNPJ"
-                  required
-                  value={formEmpresa.cnpj}
-                  onChange={e => setFormEmpresa({ ...formEmpresa, cnpj: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                />
-
-                <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-emerald-900/20">
-                  CADASTRAR EMPRESA
-                </button>
-              </form>
-            )}
+            <p style={{ margin: 0, fontSize: 13, color: "#6B7280", lineHeight: 1.6 }}>
+              Cadastro de alunos e empresas parceiras, acesso ao perfil do aluno
+              e painel de vantagens.
+            </p>
           </div>
 
-          <div className="lg:col-span-2 space-y-8">
-            <div className="bg-[#1e293b] rounded-3xl p-8 border border-slate-800 shadow-xl">
-              <h2 className="text-blue-400 font-bold mb-6 flex items-center gap-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                ALUNOS CADASTRADOS
-              </h2>
+          <div
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(198,241,53,0.08) 0%, rgba(198,241,53,0.03) 100%)",
+              border: `1px solid ${ACCENT_BORDER}`,
+              borderRadius: 20,
+              padding: 28,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: ACCENT,
+                display: "block",
+                marginBottom: 8,
+              }}
+            >
+              Total de cadastros
+            </span>
 
-              <div className="space-y-3">
-                {alunos.map((a) => (
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span
+                style={{
+                  fontSize: 48,
+                  fontWeight: 900,
+                  color: ACCENT,
+                  lineHeight: 1,
+                  letterSpacing: "-0.04em",
+                }}
+              >
+                {totalCadastros}
+              </span>
+
+              <span
+                style={{
+                  fontSize: 13,
+                  color: "rgba(198,241,53,0.5)",
+                  fontWeight: 600,
+                }}
+              >
+                registros
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <StatCard label="Alunos" value={alunos.length} />
+            <StatCard label="Empresas" value={empresas.length} />
+          </div>
+
+          <div
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 20,
+              padding: 24,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#4B5563",
+                display: "block",
+                marginBottom: 12,
+              }}
+            >
+              Navegação
+            </span>
+
+            <p style={{ margin: "0 0 10px", fontSize: 12, color: "#6B7280", lineHeight: 1.6 }}>
+              Clique em um aluno para abrir o perfil com extrato e vantagens.
+            </p>
+
+            <p style={{ margin: 0, fontSize: 12, color: "#6B7280", lineHeight: 1.6 }}>
+              Clique em uma empresa para abrir o painel de cadastro de vantagens.
+            </p>
+          </div>
+        </aside>
+
+        <main>
+          <div
+            style={{
+              display: "flex",
+              gap: 4,
+              marginBottom: 28,
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 14,
+              padding: 4,
+            }}
+          >
+            {abas.map((aba) => (
+              <button
+                key={aba.id}
+                onClick={() => setAbaAtiva(aba.id)}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "10px 16px",
+                  borderRadius: 10,
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
+                  background:
+                    abaAtiva === aba.id ? "rgba(255,255,255,0.06)" : "transparent",
+                  color: abaAtiva === aba.id ? "#F9FAFB" : "#4B5563",
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: aba.dot,
+                    display: "inline-block",
+                    opacity: abaAtiva === aba.id ? 1 : 0.4,
+                    boxShadow: abaAtiva === aba.id ? `0 0 6px ${aba.dot}88` : "none",
+                  }}
+                />
+
+                {aba.label}
+
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    background:
+                      abaAtiva === aba.id
+                        ? "rgba(255,255,255,0.08)"
+                        : "rgba(255,255,255,0.03)",
+                    color: abaAtiva === aba.id ? "#9CA3AF" : "#374151",
+                    padding: "1px 7px",
+                    borderRadius: 99,
+                  }}
+                >
+                  {aba.count}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {abaAtiva === "aluno" && (
+            <section>
+              <SectionHeader
+                dot={ACCENT}
+                title="Cadastro de aluno"
+                subtitle="Cadastre alunos para que possam receber moedas e resgatar vantagens."
+                count={alunos.length}
+              />
+
+              <form
+                onSubmit={cadastrarAluno}
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: 18,
+                  padding: 24,
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 16,
+                  marginBottom: 28,
+                }}
+              >
+                <TextInput
+                  label="Nome"
+                  placeholder="Nome do aluno"
+                  value={formAluno.nome}
+                  onChange={(value) => setFormAluno({ ...formAluno, nome: value })}
+                />
+
+                <TextInput
+                  label="E-mail"
+                  placeholder="email@exemplo.com"
+                  type="email"
+                  value={formAluno.email}
+                  onChange={(value) => setFormAluno({ ...formAluno, email: value })}
+                />
+
+                <TextInput
+                  label="CPF"
+                  placeholder="Somente números"
+                  value={formAluno.cpf}
+                  onChange={(value) => setFormAluno({ ...formAluno, cpf: value })}
+                />
+
+                <TextInput
+                  label="RG"
+                  placeholder="Somente números"
+                  value={formAluno.rg}
+                  onChange={(value) => setFormAluno({ ...formAluno, rg: value })}
+                />
+
+                <TextInput
+                  label="Curso"
+                  placeholder="Ex: Engenharia de Software"
+                  value={formAluno.curso}
+                  onChange={(value) => setFormAluno({ ...formAluno, curso: value })}
+                />
+
+                <TextInput
+                  label="Instituição"
+                  placeholder="Ex: PUC Minas"
+                  value={formAluno.instituicaoNome}
+                  onChange={(value) =>
+                    setFormAluno({ ...formAluno, instituicaoNome: value })
+                  }
+                />
+
+                <button
+                  disabled={salvando}
+                  style={{
+                    gridColumn: "1 / -1",
+                    width: "100%",
+                    padding: "13px 0",
+                    borderRadius: 12,
+                    border: "none",
+                    cursor: salvando ? "not-allowed" : "pointer",
+                    fontSize: 12,
+                    fontWeight: 900,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    background: salvando ? "rgba(255,255,255,0.04)" : ACCENT,
+                    color: salvando ? "#374151" : "#080B0F",
+                  }}
+                >
+                  {salvando ? "Cadastrando..." : "Cadastrar aluno"}
+                </button>
+              </form>
+
+              <SectionHeader
+                dot="#60A5FA"
+                title="Alunos cadastrados"
+                subtitle="Clique em um aluno para acessar o perfil detalhado."
+                count={alunos.length}
+              />
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {alunos.map((aluno) => (
                   <div
-                    key={a.id}
-                    onClick={() => abrirPerfilAluno(a.id)}
-                    className="flex justify-between items-center bg-[#0f172a] p-4 rounded-2xl border border-slate-800 hover:border-blue-500/50 transition-all cursor-pointer"
+                    key={aluno.id}
+                    onClick={() => abrirPerfilAluno(aluno.id)}
+                    style={{
+                      background: "rgba(255,255,255,0.02)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      borderRadius: 16,
+                      padding: "18px 20px",
+                      display: "grid",
+                      gridTemplateColumns: "1fr auto",
+                      gap: 16,
+                      alignItems: "center",
+                      cursor: "pointer",
+                    }}
                   >
                     <div>
-                      <p className="font-bold text-slate-100">{a.nome}</p>
-
-                      <p className="text-xs text-slate-500 uppercase tracking-widest">
-                        {a.curso} {a.instituicaoNome ? `— ${a.instituicaoNome}` : ""}
+                      <p
+                        style={{
+                          margin: "0 0 4px",
+                          fontSize: 15,
+                          fontWeight: 800,
+                          color: "#F9FAFB",
+                        }}
+                      >
+                        {aluno.nome}
                       </p>
 
-                      <p className="text-[10px] text-blue-400 uppercase font-bold tracking-widest mt-2">
+                      <p style={{ margin: 0, fontSize: 12, color: "#6B7280" }}>
+                        {aluno.curso}{" "}
+                        {aluno.instituicaoNome ? `— ${aluno.instituicaoNome}` : ""}
+                      </p>
+
+                      <p
+                        style={{
+                          margin: "8px 0 0",
+                          fontSize: 10,
+                          color: "#374151",
+                          fontWeight: 700,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                        }}
+                      >
                         Clique para acessar o perfil do aluno
                       </p>
                     </div>
@@ -354,33 +922,165 @@ export default function Home() {
                     <button
                       onClick={(event) => {
                         event.stopPropagation();
-                        excluirItem("alunos", a.id);
+                        excluirItem("alunos", aluno.id);
                       }}
-                      className="text-red-400 hover:bg-red-500/10 px-4 py-2 rounded-lg text-xs font-bold transition-all"
+                      style={{
+                        padding: "9px 14px",
+                        borderRadius: 10,
+                        border: "1px solid rgba(248,113,113,0.2)",
+                        background: "rgba(248,113,113,0.08)",
+                        color: "#F87171",
+                        cursor: "pointer",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: "0.07em",
+                        textTransform: "uppercase",
+                      }}
                     >
-                      EXCLUIR
+                      Excluir
                     </button>
                   </div>
                 ))}
+
+                {alunos.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "80px 0" }}>
+                    <p
+                      style={{
+                        color: "#1F2937",
+                        fontWeight: 800,
+                        fontSize: 13,
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        margin: 0,
+                      }}
+                    >
+                      Nenhum aluno cadastrado
+                    </p>
+                  </div>
+                )}
               </div>
-            </div>
+            </section>
+          )}
 
-            <div className="bg-[#1e293b] rounded-3xl p-8 border border-slate-800 shadow-xl">
-              <h2 className="text-emerald-400 font-bold mb-6 flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                EMPRESAS PARCEIRAS
-              </h2>
+          {abaAtiva === "empresa" && (
+            <section>
+              <SectionHeader
+                dot={ACCENT}
+                title="Cadastro de empresa"
+                subtitle="Cadastre empresas parceiras para disponibilizar vantagens."
+                count={empresas.length}
+              />
 
-              <div className="space-y-3">
+              <form
+                onSubmit={cadastrarEmpresa}
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: 18,
+                  padding: 24,
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 16,
+                  marginBottom: 28,
+                }}
+              >
+                <TextInput
+                  label="Razão social"
+                  placeholder="Nome da empresa"
+                  value={formEmpresa.nome}
+                  onChange={(value) => setFormEmpresa({ ...formEmpresa, nome: value })}
+                />
+
+                <TextInput
+                  label="E-mail corporativo"
+                  placeholder="empresa@exemplo.com"
+                  type="email"
+                  value={formEmpresa.email}
+                  onChange={(value) =>
+                    setFormEmpresa({ ...formEmpresa, email: value })
+                  }
+                />
+
+                <TextInput
+                  label="CNPJ"
+                  placeholder="Somente números"
+                  value={formEmpresa.cnpj}
+                  onChange={(value) =>
+                    setFormEmpresa({ ...formEmpresa, cnpj: value })
+                  }
+                />
+
+                <button
+                  disabled={salvando}
+                  style={{
+                    width: "100%",
+                    padding: "13px 0",
+                    alignSelf: "end",
+                    borderRadius: 12,
+                    border: "none",
+                    cursor: salvando ? "not-allowed" : "pointer",
+                    fontSize: 12,
+                    fontWeight: 900,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    background: salvando ? "rgba(255,255,255,0.04)" : ACCENT,
+                    color: salvando ? "#374151" : "#080B0F",
+                  }}
+                >
+                  {salvando ? "Cadastrando..." : "Cadastrar empresa"}
+                </button>
+              </form>
+
+              <SectionHeader
+                dot="#60A5FA"
+                title="Empresas parceiras"
+                subtitle="Clique em uma empresa para acessar o painel de vantagens."
+                count={empresas.length}
+              />
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {empresas.map((empresa) => (
                   <div
                     key={empresa.id}
                     onClick={() => abrirPainelEmpresa(empresa.id)}
-                    className="flex justify-between items-center bg-[#0f172a] p-4 rounded-2xl border border-slate-800 hover:border-emerald-500/50 transition-all cursor-pointer"
+                    style={{
+                      background: "rgba(255,255,255,0.02)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      borderRadius: 16,
+                      padding: "18px 20px",
+                      display: "grid",
+                      gridTemplateColumns: "1fr auto",
+                      gap: 16,
+                      alignItems: "center",
+                      cursor: "pointer",
+                    }}
                   >
                     <div>
-                      <p className="font-bold text-slate-100">{empresa.nome}</p>
-                      <p className="text-xs text-slate-500 uppercase tracking-widest">
+                      <p
+                        style={{
+                          margin: "0 0 4px",
+                          fontSize: 15,
+                          fontWeight: 800,
+                          color: "#F9FAFB",
+                        }}
+                      >
+                        {empresa.nome}
+                      </p>
+
+                      <p style={{ margin: 0, fontSize: 12, color: "#6B7280" }}>
+                        {empresa.email} — {formatarCnpj(empresa.cnpj)}
+                      </p>
+
+                      <p
+                        style={{
+                          margin: "8px 0 0",
+                          fontSize: 10,
+                          color: "#374151",
+                          fontWeight: 700,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                        }}
+                      >
                         Clique para acessar o painel da empresa
                       </p>
                     </div>
@@ -390,24 +1090,53 @@ export default function Home() {
                         event.stopPropagation();
                         excluirItem("empresas", empresa.id);
                       }}
-                      className="text-red-400 hover:bg-red-500/10 px-4 py-2 rounded-lg text-xs font-bold transition-all"
+                      style={{
+                        padding: "9px 14px",
+                        borderRadius: 10,
+                        border: "1px solid rgba(248,113,113,0.2)",
+                        background: "rgba(248,113,113,0.08)",
+                        color: "#F87171",
+                        cursor: "pointer",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: "0.07em",
+                        textTransform: "uppercase",
+                      }}
                     >
-                      EXCLUIR
+                      Excluir
                     </button>
                   </div>
                 ))}
 
                 {empresas.length === 0 && (
-                  <p className="text-center py-8 text-slate-600 font-bold uppercase text-sm">
-                    Nenhuma empresa cadastrada
-                  </p>
+                  <div style={{ textAlign: "center", padding: "80px 0" }}>
+                    <p
+                      style={{
+                        color: "#1F2937",
+                        fontWeight: 800,
+                        fontSize: 13,
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        margin: 0,
+                      }}
+                    >
+                      Nenhuma empresa cadastrada
+                    </p>
+                  </div>
                 )}
               </div>
-            </div>
-
-          </div>
-        </div>
+            </section>
+          )}
+        </main>
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+      `}</style>
     </div>
   );
 }

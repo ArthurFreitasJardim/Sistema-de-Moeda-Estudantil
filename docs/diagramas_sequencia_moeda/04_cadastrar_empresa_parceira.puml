@@ -1,0 +1,29 @@
+@startuml
+title UC04 - Cadastrar Empresa Parceira
+
+actor "Empresa Parceira" as E
+boundary "Tela de Cadastro\nNext.js" as Front
+control "EmpresaController\nMicronaut" as Ctrl
+control "EmpresaRepository" as Repo
+database "PostgreSQL" as DB
+
+E -> Front: Preenche nome, e-mail, CNPJ e senha
+Front -> Front: Valida campos obrigatórios
+Front -> Ctrl: POST /empresas\n{nome,email,cnpj,senha}
+Ctrl -> Ctrl: Normaliza e-mail e CNPJ
+Ctrl -> Repo: save(empresa)
+Repo -> DB: INSERT usuario + empresa
+
+alt Cadastro realizado
+    DB --> Repo: Empresa salva
+    Repo --> Ctrl: Empresa
+    Ctrl --> Front: 201 Created\nEmpresaResponse
+    Front --> E: Toast de sucesso e atualiza lista
+else CNPJ ou e-mail duplicado
+    DB --> Repo: Erro de restrição
+    Repo --> Ctrl: Exception
+    Ctrl --> Front: 500/400 {erro}
+    Front --> E: Toast de erro
+end
+
+@enduml

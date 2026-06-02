@@ -1,0 +1,24 @@
+@startuml
+title UC13 - Adicionar 1.000 Moedas Semestralmente
+
+actor "Tempo (Semestral)" as Tempo
+control "Agendador Semestral\nMicronaut" as Scheduler
+control "ProfessorRepository" as ProfRepo
+database "PostgreSQL" as DB
+
+Tempo -> Scheduler: Dispara rotina semestral
+Scheduler -> ProfRepo: findAll()
+ProfRepo -> DB: SELECT professores
+DB --> ProfRepo: Lista de professores
+ProfRepo --> Scheduler: Professores
+
+loop Para cada professor
+    Scheduler -> Scheduler: saldoCorrente += 1000
+    Scheduler -> ProfRepo: update(professor)
+    ProfRepo -> DB: UPDATE professor saldo_corrente
+    DB --> ProfRepo: Atualizado
+end
+
+Scheduler --> Tempo: Rotina concluída
+
+@enduml

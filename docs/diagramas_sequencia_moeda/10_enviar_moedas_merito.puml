@@ -1,0 +1,43 @@
+@startuml
+title UC10 - Enviar Moedas de Mérito
+
+actor Professor as P
+boundary "Painel do Professor\nNext.js" as Front
+control "TransacaoController\nMicronaut" as Ctrl
+control "ProfessorRepository" as ProfRepo
+control "AlunoRepository" as AlunoRepo
+control "TransacaoRepository" as TransRepo
+queue "RabbitMQ\nFila: moedas.email" as Rabbit
+database "PostgreSQL" as DB
+
+P -> Front: Seleciona aluno, valor e motivo
+Front -> Front: Valida campos e saldo exibido
+Front -> Ctrl: POST /transacoes\n{remetenteId,destinatarioId,valor,motivo}
+Ctrl -> ProfRepo: findById(remetenteId)
+ProfRepo -> DB: SELECT professor
+DB --> ProfRepo: Professor
+ProfRepo --> Ctrl: Professor
+
+Ctrl -> AlunoRepo: findById(destinatarioId)
+AlunoRepo -> DB: SELECT aluno
+DB --> AlunoRepo: Aluno
+AlunoRepo --> Ctrl: Aluno
+
+Ctrl -> Ctrl: Verifica mesma instituição e curso
+Ctrl -> Ctrl: Verifica saldo suficiente
+Ctrl -> Ctrl: professor.saldoCorrente -= valor
+Ctrl -> Ctrl: aluno.saldoAtual += valor
+Ctrl -> ProfRepo: update(professor)
+ProfRepo -> DB: UPDATE saldo professor
+Ctrl -> AlunoRepo: update(aluno)
+AlunoRepo -> DB: UPDATE saldo aluno
+Ctrl -> TransRepo: save(transacao)
+TransRepo -> DB: INSERT transacao
+DB --> TransRepo: Transação salva
+TransRepo --> Ctrl: Transação
+Ctrl -> Rabbit: Publica EnvioMoedasEvent
+Ctrl --> Front: 201 Created\n{status: sucesso}
+Front -> Front: Recarrega dados
+Front --> P: Toast de sucesso
+
+@enduml

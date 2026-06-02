@@ -1,0 +1,28 @@
+@startuml
+title UC08 - Enviar Cupom por E-mail (Aluno e Empresa)
+
+actor Aluno as A
+boundary "Perfil do Aluno\nNext.js" as Front
+control "ResgateVantagemController\nMicronaut" as Ctrl
+queue "RabbitMQ\nFila: cupons.email" as Rabbit
+control "EmailConsumer" as Consumer
+control "EmailService" as EmailService
+actor "Sistema de E-mail" as Mail
+
+A -> Front: Resgata vantagem
+Front -> Ctrl: POST /resgates
+Ctrl -> Ctrl: Salva resgate e gera cupom
+Ctrl -> Rabbit: Publica evento\nCupomResgatadoEvent
+Ctrl --> Front: 201 Created\nResgateResponse
+Front --> A: Toast de sucesso
+
+Rabbit -> Consumer: Entrega mensagem
+Consumer -> EmailService: enviarCupomAluno(resgate)
+EmailService -> Mail: Envia e-mail para aluno
+Mail --> EmailService: Confirma envio
+Consumer -> EmailService: enviarCupomEmpresa(resgate)
+EmailService -> Mail: Envia e-mail para empresa
+Mail --> EmailService: Confirma envio
+Consumer -> Rabbit: ACK mensagem
+
+@enduml

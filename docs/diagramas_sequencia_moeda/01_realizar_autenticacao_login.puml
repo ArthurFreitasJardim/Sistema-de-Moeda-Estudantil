@@ -1,0 +1,28 @@
+@startuml
+title UC01 - Realizar Autenticação (Login)
+
+actor Usuario as U
+boundary "Tela de Login\nNext.js" as Front
+control "AuthController\nMicronaut" as Auth
+control "UsuarioRepository" as Repo
+database "PostgreSQL" as DB
+
+U -> Front: Informa e-mail e senha
+Front -> Front: Valida campos obrigatórios
+Front -> Auth: POST /auth/login\n{email, senha}
+Auth -> Repo: findByEmail(email)
+Repo -> DB: SELECT usuario WHERE email = ?
+DB --> Repo: Dados do usuário
+Repo --> Auth: Usuario encontrado
+
+alt Credenciais válidas
+    Auth -> Auth: Identifica perfil\nAluno / Professor / Empresa
+    Auth --> Front: 200 OK\n{id, nome, tipoUsuario}
+    Front -> Front: Armazena usuário autenticado
+    Front --> U: Redireciona para painel do perfil
+else Credenciais inválidas
+    Auth --> Front: 401 Unauthorized\n{erro}
+    Front --> U: Exibe toast de erro
+end
+
+@enduml
