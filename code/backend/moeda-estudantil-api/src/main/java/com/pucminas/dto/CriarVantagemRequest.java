@@ -7,5 +7,6 @@ public record CriarVantagemRequest(
         Long empresaId,
         String nome,
         String descricao,
-        Integer valorMoedas
+        Integer valorMoedas,
+        Integer quantidadeDisponivel
 ) {}

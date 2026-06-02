@@ -8,6 +8,7 @@ public record VantagemResponse(
         String nome,
         String descricao,
         Integer valorMoedas,
+        Integer quantidadeDisponivel,
         Long empresaId,
         String empresaNome
 ) {}

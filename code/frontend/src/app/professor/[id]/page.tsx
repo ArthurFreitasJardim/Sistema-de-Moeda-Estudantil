@@ -148,7 +148,7 @@ export default function PainelProfessorPorId() {
       if (res.ok) {
         toast.success("Moedas enviadas com sucesso!");
         setEnvio({ alunoId: "", valor: "", motivo: "" });
-        carregarDados();
+        await carregarDados();
       } else {
         toast.error(body.erro || "Falha ao realizar transação.");
       }

@@ -5,13 +5,14 @@ import com.pucminas.dto.ErroResponse;
 import com.pucminas.dto.StatusResponse;
 import com.pucminas.dto.TransacaoExtratoResponse;
 import com.pucminas.dto.TransacaoProfessorResponse;
+import com.pucminas.messaging.EmailProducer;
+import com.pucminas.messaging.EnvioMoedasEvent;
 import com.pucminas.model.Aluno;
 import com.pucminas.model.Professor;
 import com.pucminas.model.Transacao;
 import com.pucminas.repository.AlunoRepository;
 import com.pucminas.repository.ProfessorRepository;
 import com.pucminas.repository.TransacaoRepository;
-import com.pucminas.service.EmailService;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
@@ -26,26 +27,24 @@ public class TransacaoController {
     private final TransacaoRepository transacaoRepository;
     private final ProfessorRepository professorRepository;
     private final AlunoRepository alunoRepository;
-    private final EmailService emailService;
+    private final EmailProducer emailProducer;
 
     public TransacaoController(
             TransacaoRepository transacaoRepository,
             ProfessorRepository professorRepository,
             AlunoRepository alunoRepository,
-            EmailService emailService
-    ) {
+            EmailProducer emailProducer) {
         this.transacaoRepository = transacaoRepository;
         this.professorRepository = professorRepository;
         this.alunoRepository = alunoRepository;
-        this.emailService = emailService;
+        this.emailProducer = emailProducer;
     }
 
     @Get(uri = "/professor/{professorId}", produces = MediaType.APPLICATION_JSON)
     public List<TransacaoProfessorResponse> listarPorProfessor(@PathVariable Long professorId) {
         return StreamSupport.stream(
-                        transacaoRepository.findByRemetenteId(professorId).spliterator(),
-                        false
-                )
+                transacaoRepository.findByRemetenteId(professorId).spliterator(),
+                false)
                 .map(this::toProfessorResponse)
                 .toList();
     }
@@ -53,9 +52,8 @@ public class TransacaoController {
     @Get(uri = "/aluno/{alunoId}", produces = MediaType.APPLICATION_JSON)
     public List<TransacaoExtratoResponse> listarPorAluno(@PathVariable Long alunoId) {
         return StreamSupport.stream(
-                        transacaoRepository.findByDestinatarioId(alunoId).spliterator(),
-                        false
-                )
+                transacaoRepository.findByDestinatarioId(alunoId).spliterator(),
+                false)
                 .map(this::toExtratoResponse)
                 .toList();
     }
@@ -64,14 +62,12 @@ public class TransacaoController {
     @Transactional
     public HttpResponse<?> criar(@Body CriarTransacaoRequest request) {
         try {
-            if (
-                    request.remetenteId() == null ||
+            if (request.remetenteId() == null ||
                     request.destinatarioId() == null ||
                     request.valor() == null ||
                     request.valor() <= 0 ||
                     request.motivo() == null ||
-                    request.motivo().isBlank()
-            ) {
+                    request.motivo().isBlank()) {
                 return HttpResponse.badRequest(new ErroResponse("Dados inválidos"));
             }
 
@@ -83,7 +79,8 @@ public class TransacaoController {
             }
 
             if (!pertenceAoMesmoCursoEInstituicao(professor, aluno)) {
-                return HttpResponse.badRequest(new ErroResponse("Aluno não pertence ao mesmo curso e instituição do professor"));
+                return HttpResponse
+                        .badRequest(new ErroResponse("Aluno não pertence ao mesmo curso e instituição do professor"));
             }
 
             if (professor.getSaldoCorrente() < request.valor()) {
@@ -104,8 +101,19 @@ public class TransacaoController {
 
             Transacao transacaoSalva = transacaoRepository.save(transacao);
 
-            emailService.enviarConfirmacaoEnvioParaProfessor(professor, aluno, transacaoSalva);
-            emailService.enviarConfirmacaoRecebimentoParaAluno(professor, aluno, transacaoSalva);
+            try {
+                emailProducer.publicarEnvioMoedas(
+                        new EnvioMoedasEvent(
+                                transacaoSalva.getId(),
+                                professor.getId(),
+                                aluno.getId()));
+
+                System.out.println("Mensagem publicada no RabbitMQ para envio de e-mails.");
+
+            } catch (Exception rabbitException) {
+                System.out.println("Erro ao publicar mensagem no RabbitMQ: " + rabbitException.getMessage());
+            }
+            ;
 
             return HttpResponse.created(new StatusResponse("sucesso"));
 
@@ -115,14 +123,12 @@ public class TransacaoController {
     }
 
     private boolean pertenceAoMesmoCursoEInstituicao(Professor professor, Aluno aluno) {
-        if (
-                professor.getDepartamento() == null ||
+        if (professor.getDepartamento() == null ||
                 professor.getInstituicao() == null ||
                 professor.getInstituicao().getNome() == null ||
                 aluno.getCurso() == null ||
                 aluno.getInstituicao() == null ||
-                aluno.getInstituicao().getNome() == null
-        ) {
+                aluno.getInstituicao().getNome() == null) {
             return false;
         }
 
@@ -140,8 +146,7 @@ public class TransacaoController {
                 destinatarioNome,
                 transacao.getValor(),
                 transacao.getMotivo(),
-                transacao.getDataHora() != null ? transacao.getDataHora().toString() : ""
-        );
+                transacao.getDataHora() != null ? transacao.getDataHora().toString() : "");
     }
 
     private TransacaoExtratoResponse toExtratoResponse(Transacao transacao) {
@@ -169,7 +174,6 @@ public class TransacaoController {
                 alunoNome,
                 transacao.getValor(),
                 transacao.getMotivo(),
-                transacao.getDataHora() != null ? transacao.getDataHora().toString() : ""
-        );
+                transacao.getDataHora() != null ? transacao.getDataHora().toString() : "");
     }
 }

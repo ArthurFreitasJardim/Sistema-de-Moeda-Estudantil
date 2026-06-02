@@ -60,7 +60,8 @@ public class VantagemController {
                     request.empresaId() == null ||
                     request.nome() == null || request.nome().isBlank() ||
                     request.descricao() == null || request.descricao().isBlank() ||
-                    request.valorMoedas() == null || request.valorMoedas() <= 0
+                    request.valorMoedas() == null || request.valorMoedas() <= 0 ||
+                    request.quantidadeDisponivel() == null || request.quantidadeDisponivel() <= 0
             ) {
                 return HttpResponse.badRequest(new ErroResponse("Todos os campos da vantagem são obrigatórios"));
             }
@@ -75,6 +76,7 @@ public class VantagemController {
             vantagem.setNome(request.nome().trim());
             vantagem.setDescricao(request.descricao().trim());
             vantagem.setValorMoedas(request.valorMoedas());
+            vantagem.setQuantidadeDisponivel(request.quantidadeDisponivel());
             vantagem.setEmpresa(empresa);
 
             Vantagem vantagemSalva = vantagemRepository.save(vantagem);
@@ -107,11 +109,16 @@ public class VantagemController {
                 ? vantagem.getEmpresa().getNome()
                 : "";
 
+        Integer quantidadeDisponivel = vantagem.getQuantidadeDisponivel() != null
+                ? vantagem.getQuantidadeDisponivel()
+                : 0;
+
         return new VantagemResponse(
                 vantagem.getId(),
                 vantagem.getNome(),
                 vantagem.getDescricao(),
                 vantagem.getValorMoedas(),
+                quantidadeDisponivel,
                 empresaId,
                 empresaNome
         );

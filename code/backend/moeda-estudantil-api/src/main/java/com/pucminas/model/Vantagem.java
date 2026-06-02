@@ -25,6 +25,10 @@ public class Vantagem {
     @Column(nullable = false)
     private Integer valorMoedas;
 
+    @NotNull
+    @Column(nullable = false)
+    private Integer quantidadeDisponivel = 1;
+
     @ManyToOne
     private Empresa empresa;
 
@@ -32,38 +36,44 @@ public class Vantagem {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getNome() {
         return nome;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public Integer getValorMoedas() {
+        return valorMoedas;
+    }
+
+    public Integer getQuantidadeDisponivel() {
+        return quantidadeDisponivel;
+    }
+
+    public Empresa getEmpresa() {
+        return empresa;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setNome(String nome) {
         this.nome = nome;
     }
 
-
-    public String getDescricao() {
-        return descricao;
-    }
-
     public void setDescricao(String descricao) {
         this.descricao = descricao;
-    }
-
-
-    public Integer getValorMoedas() {
-        return valorMoedas;
     }
 
     public void setValorMoedas(Integer valorMoedas) {
         this.valorMoedas = valorMoedas;
     }
 
-    public Empresa getEmpresa() {
-        return empresa;
+    public void setQuantidadeDisponivel(Integer quantidadeDisponivel) {
+        this.quantidadeDisponivel = quantidadeDisponivel;
     }
 
     public void setEmpresa(Empresa empresa) {
