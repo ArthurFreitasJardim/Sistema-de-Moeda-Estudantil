@@ -1,35 +1,79 @@
 @startuml
 title UC01 - Realizar Autenticação (Login)
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
 actor Usuario as U
-boundary "Tela de Login\nNext.js" as Front
-control "AuthController\nMicronaut" as Auth
+boundary "Tela de Login
+Next.js" as Front
+control "AuthController
+Micronaut" as Auth
 control "UsuarioRepository" as Repo
 database "PostgreSQL" as DB
 
 U -> Front: Informa e-mail e senha
-Front -> Front: Valida campos obrigatórios
-Front -> Auth: POST /auth/login\n{email, senha}
+activate Front
+note right of Front
+  Valida campos obrigatórios
+  e prepara o payload.
+end note
+
+Front -> Auth: POST /auth/login
+{email, senha}
+activate Auth
 Auth -> Repo: findByEmail(email)
+activate Repo
 Repo -> DB: SELECT usuario WHERE email = ?
+activate DB
 DB --> Repo: Dados do usuário
+deactivate DB
 Repo --> Auth: Usuario encontrado
+deactivate Repo
 
 alt Credenciais válidas
-    Auth -> Auth: Identifica perfil\nAluno / Professor / Empresa
-    Auth --> Front: 200 OK\n{id, nome, tipoUsuario}
-    Front -> Front: Armazena usuário autenticado
+    note right of Auth
+      Identifica o tipo de usuário:
+      Aluno, Professor ou Empresa.
+    end note
+    Auth --> Front: 200 OK
+{id, nome, tipoUsuario}
+    deactivate Auth
+    note right of Front
+      Armazena usuário autenticado
+      e define a rota do painel.
+    end note
     Front --> U: Redireciona para painel do perfil
 else Credenciais inválidas
-    Auth --> Front: 401 Unauthorized\n{erro}
+    Auth --> Front: 401 Unauthorized
+{erro}
+    deactivate Auth
     Front --> U: Exibe toast de erro
 end
 
+deactivate Front
 @enduml

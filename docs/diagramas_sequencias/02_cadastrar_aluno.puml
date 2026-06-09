@@ -1,50 +1,89 @@
 @startuml
 title UC02 - Cadastrar Aluno
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
 actor Aluno as A
-boundary "Tela de Cadastro\nNext.js" as Front
-control "AlunoController\nMicronaut" as Ctrl
+boundary "Tela de Cadastro
+Next.js" as Front
+control "AlunoController
+Micronaut" as Ctrl
 control "InstituicaoRepository" as InstRepo
 control "AlunoRepository" as AlunoRepo
 database "PostgreSQL" as DB
 
 A -> Front: Preenche dados do aluno
-Front -> Front: Valida campos obrigatórios
-Front -> Ctrl: POST /alunos\n{nome,email,cpf,rg,curso,instituicaoNome,senha}
-Ctrl -> Ctrl: Normaliza e-mail, CPF/RG e textos
-Ctrl -> InstRepo: findByNome(instituicaoNome)
-InstRepo -> DB: SELECT instituicao WHERE nome = ?
+activate Front
+note right of Front
+  Remove máscara de CPF/RG,
+  normaliza e-mail e valida campos.
+end note
 
-alt Instituição existe
-    DB --> InstRepo: Instituição encontrada
-    InstRepo --> Ctrl: Instituição
-else Instituição não existe
+Front -> Ctrl: POST /alunos
+AlunoRequest
+activate Ctrl
+note right of Ctrl
+  Valida obrigatoriedade dos campos
+  e prepara a instituição informada.
+end note
+
+Ctrl -> InstRepo: findByNome(instituicaoNome)
+activate InstRepo
+InstRepo -> DB: SELECT instituicao WHERE nome = ?
+activate DB
+DB --> InstRepo: Instituição ou vazio
+deactivate DB
+InstRepo --> Ctrl: Optional<Instituicao>
+deactivate InstRepo
+
+alt Instituição não existe
     Ctrl -> InstRepo: save(novaInstituicao)
+    activate InstRepo
     InstRepo -> DB: INSERT instituicao
-    DB --> InstRepo: Instituição criada
-    InstRepo --> Ctrl: Nova instituição
+    activate DB
+    DB --> InstRepo: Instituição salva
+    deactivate DB
+    InstRepo --> Ctrl: Instituição
+    deactivate InstRepo
 end
 
 Ctrl -> AlunoRepo: save(aluno)
-AlunoRepo -> DB: INSERT usuario + aluno
-
-alt Cadastro realizado
-    DB --> AlunoRepo: Aluno salvo
-    AlunoRepo --> Ctrl: Aluno
-    Ctrl --> Front: 201 Created\nAlunoResponse
-    Front --> A: Toast de sucesso e atualiza lista
-else CPF ou e-mail duplicado
-    DB --> AlunoRepo: Erro de restrição
-    AlunoRepo --> Ctrl: Exception
-    Ctrl --> Front: 500/400 {erro}
-    Front --> A: Toast de erro
-end
-
+activate AlunoRepo
+AlunoRepo -> DB: INSERT usuario/aluno
+activate DB
+DB --> AlunoRepo: Aluno salvo
+deactivate DB
+AlunoRepo --> Ctrl: Aluno
+deactivate AlunoRepo
+Ctrl --> Front: 201 Created
+AlunoResponse
+deactivate Ctrl
+Front --> A: Exibe toast de sucesso
+e atualiza lista
+deactivate Front
 @enduml

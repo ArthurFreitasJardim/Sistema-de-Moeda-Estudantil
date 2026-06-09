@@ -1,36 +1,77 @@
 @startuml
 title UC03 - Selecionar Instituição de Ensino
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
 actor Aluno as A
-boundary "Formulário de Cadastro\nNext.js" as Front
-control "AlunoController\nMicronaut" as Ctrl
+boundary "Formulário de Cadastro
+Next.js" as Front
+control "AlunoController
+Micronaut" as Ctrl
 control "InstituicaoRepository" as Repo
 database "PostgreSQL" as DB
 
-A -> Front: Informa o nome da instituição
-Front -> Ctrl: Envia instituição junto ao cadastro
+A -> Front: Informa nome da instituição
+activate Front
+note right of Front
+  O nome da instituição é enviado
+  junto com o cadastro do aluno.
+end note
+
+Front -> Ctrl: POST /alunos
+com instituicaoNome
+activate Ctrl
 Ctrl -> Repo: findByNome(instituicaoNome)
+activate Repo
 Repo -> DB: SELECT instituicao WHERE nome = ?
+activate DB
+DB --> Repo: Resultado
+deactivate DB
+Repo --> Ctrl: Optional<Instituicao>
+deactivate Repo
 
 alt Instituição encontrada
-    DB --> Repo: Instituição
-    Repo --> Ctrl: Usa instituição existente
+    note right of Ctrl
+      Associa aluno à instituição existente.
+    end note
 else Instituição não encontrada
-    DB --> Repo: vazio
     Ctrl -> Repo: save(novaInstituicao)
+    activate Repo
     Repo -> DB: INSERT instituicao
+    activate DB
     DB --> Repo: Instituição criada
-    Repo --> Ctrl: Usa nova instituição
+    deactivate DB
+    Repo --> Ctrl: Instituição
+    deactivate Repo
 end
 
 Ctrl --> Front: Instituição associada ao aluno
+deactivate Ctrl
 Front --> A: Cadastro continua normalmente
-
+deactivate Front
 @enduml

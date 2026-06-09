@@ -1,50 +1,113 @@
 @startuml
 title UC10 - Enviar Moedas de Mérito
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
 actor Professor as P
-boundary "Painel do Professor\nNext.js" as Front
-control "TransacaoController\nMicronaut" as Ctrl
+boundary "Painel do Professor
+Next.js" as Front
+control "TransacaoController
+Micronaut" as Ctrl
 control "ProfessorRepository" as ProfRepo
 control "AlunoRepository" as AlunoRepo
 control "TransacaoRepository" as TransRepo
-queue "RabbitMQ\nFila: moedas.email" as Rabbit
+queue "RabbitMQ
+moedas.email" as MQ
 database "PostgreSQL" as DB
 
-P -> Front: Seleciona aluno, valor e motivo
-Front -> Front: Valida campos e saldo exibido
-Front -> Ctrl: POST /transacoes\n{remetenteId,destinatarioId,valor,motivo}
+P -> Front: Informa aluno, valor e motivo
+activate Front
+note right of Front
+  Valida campos, valor positivo
+  e saldo disponível do professor.
+end note
+Front -> Ctrl: POST /transacoes
+CriarTransacaoRequest
+activate Ctrl
+
 Ctrl -> ProfRepo: findById(remetenteId)
+activate ProfRepo
 ProfRepo -> DB: SELECT professor
+activate DB
 DB --> ProfRepo: Professor
+deactivate DB
 ProfRepo --> Ctrl: Professor
+deactivate ProfRepo
 
 Ctrl -> AlunoRepo: findById(destinatarioId)
+activate AlunoRepo
 AlunoRepo -> DB: SELECT aluno
+activate DB
 DB --> AlunoRepo: Aluno
+deactivate DB
 AlunoRepo --> Ctrl: Aluno
+deactivate AlunoRepo
 
-Ctrl -> Ctrl: Verifica mesma instituição e curso
-Ctrl -> Ctrl: Verifica saldo suficiente
-Ctrl -> Ctrl: professor.saldoCorrente -= valor
-Ctrl -> Ctrl: aluno.saldoAtual += valor
+note right of Ctrl
+  Verifica saldo, curso e instituição.
+  Em seguida atualiza saldos.
+end note
+
 Ctrl -> ProfRepo: update(professor)
-ProfRepo -> DB: UPDATE saldo professor
-Ctrl -> AlunoRepo: update(aluno)
-AlunoRepo -> DB: UPDATE saldo aluno
-Ctrl -> TransRepo: save(transacao)
-TransRepo -> DB: INSERT transacao
-DB --> TransRepo: Transação salva
-TransRepo --> Ctrl: Transação
-Ctrl -> Rabbit: Publica EnvioMoedasEvent
-Ctrl --> Front: 201 Created\n{status: sucesso}
-Front -> Front: Recarrega dados
-Front --> P: Toast de sucesso
+activate ProfRepo
+ProfRepo -> DB: UPDATE saldo_corrente
+activate DB
+DB --> ProfRepo: OK
+deactivate DB
+ProfRepo --> Ctrl: Professor atualizado
+deactivate ProfRepo
 
+Ctrl -> AlunoRepo: update(aluno)
+activate AlunoRepo
+AlunoRepo -> DB: UPDATE saldo_atual
+activate DB
+DB --> AlunoRepo: OK
+deactivate DB
+AlunoRepo --> Ctrl: Aluno atualizado
+deactivate AlunoRepo
+
+Ctrl -> TransRepo: save(transacao)
+activate TransRepo
+TransRepo -> DB: INSERT transacao
+activate DB
+DB --> TransRepo: Transação salva
+deactivate DB
+TransRepo --> Ctrl: Transação
+deactivate TransRepo
+
+Ctrl -> MQ: Publica EnvioMoedasEvent
+activate MQ
+MQ --> Ctrl: Mensagem aceita
+deactivate MQ
+Ctrl --> Front: 201 Created
+StatusResponse
+deactivate Ctrl
+Front -> Front: Recarrega saldo e histórico
+Front --> P: Toast de sucesso
+deactivate Front
 @enduml

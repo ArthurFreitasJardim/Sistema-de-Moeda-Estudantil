@@ -1,40 +1,82 @@
 @startuml
 title UC05 - Cadastrar Vantagem
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
 actor "Empresa Parceira" as E
-boundary "Painel da Empresa\nNext.js" as Front
-control "VantagemController\nMicronaut" as Ctrl
-control "EmpresaRepository" as EmpRepo
+boundary "Painel da Empresa
+Next.js" as Front
+control "VantagemController
+Micronaut" as Ctrl
+control "EmpresaRepository" as EmpresaRepo
 control "VantagemRepository" as VantRepo
 database "PostgreSQL" as DB
 
-E -> Front: Preenche nome, descrição, valor e quantidade
-Front -> Front: Valida campos obrigatórios e números > 0
-Front -> Ctrl: POST /vantagens\n{empresaId,nome,descricao,valorMoedas,quantidadeDisponivel}
-Ctrl -> EmpRepo: findById(empresaId)
-EmpRepo -> DB: SELECT empresa WHERE id = ?
+E -> Front: Informa nome, descrição,
+valor e quantidade
+activate Front
+note right of Front
+  Valida valor em moedas > 0
+  e quantidade disponível > 0.
+end note
 
-alt Empresa encontrada
-    DB --> EmpRepo: Empresa
-    EmpRepo --> Ctrl: Empresa
+Front -> Ctrl: POST /vantagens
+CriarVantagemRequest
+activate Ctrl
+Ctrl -> EmpresaRepo: findById(empresaId)
+activate EmpresaRepo
+EmpresaRepo -> DB: SELECT empresa WHERE id = ?
+activate DB
+DB --> EmpresaRepo: Empresa
+deactivate DB
+EmpresaRepo --> Ctrl: Empresa encontrada
+deactivate EmpresaRepo
+
+alt Empresa não encontrada
+    Ctrl --> Front: 400 Bad Request
+{erro}
+    deactivate Ctrl
+    Front --> E: Exibe toast de erro
+else Dados válidos
     Ctrl -> VantRepo: save(vantagem)
+    activate VantRepo
     VantRepo -> DB: INSERT vantagem
+    activate DB
     DB --> VantRepo: Vantagem salva
+    deactivate DB
     VantRepo --> Ctrl: Vantagem
-    Ctrl --> Front: 201 Created\nVantagemResponse
-    Front --> E: Toast de sucesso e atualiza lista
-else Empresa não encontrada
-    DB --> EmpRepo: vazio
-    EmpRepo --> Ctrl: vazio
-    Ctrl --> Front: 400 {erro: Empresa não encontrada}
-    Front --> E: Toast de erro
+    deactivate VantRepo
+    Ctrl --> Front: 201 Created
+VantagemResponse
+    deactivate Ctrl
+    Front --> E: Exibe toast de sucesso
+e atualiza painel
 end
 
+deactivate Front
 @enduml

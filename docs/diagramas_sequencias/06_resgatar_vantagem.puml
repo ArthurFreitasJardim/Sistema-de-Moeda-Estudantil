@@ -1,61 +1,132 @@
 @startuml
 title UC06 - Resgatar Vantagem
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
 actor Aluno as A
-boundary "Perfil do Aluno\nNext.js" as Front
-control "ResgateVantagemController\nMicronaut" as Ctrl
+boundary "Perfil do Aluno
+Next.js" as Front
+control "ResgateVantagemController
+Micronaut" as Ctrl
 control "AlunoRepository" as AlunoRepo
 control "VantagemRepository" as VantRepo
 control "ResgateVantagemRepository" as ResgRepo
 database "PostgreSQL" as DB
 
 A -> Front: Clica em Resgatar Vantagem
-Front -> Front: Verifica saldo, estoque e se já resgatou
-Front -> Ctrl: POST /resgates\n{alunoId, vantagemId}
+activate Front
+note right of Front
+  Valida saldo, estoque
+  e se a vantagem já foi resgatada
+  pelos dados já carregados na tela.
+end note
+
+Front -> Ctrl: POST /resgates
+{alunoId, vantagemId}
+activate Ctrl
+
 Ctrl -> AlunoRepo: findById(alunoId)
+activate AlunoRepo
 AlunoRepo -> DB: SELECT aluno WHERE id = ?
+activate DB
 DB --> AlunoRepo: Aluno
+deactivate DB
 AlunoRepo --> Ctrl: Aluno
+deactivate AlunoRepo
 
 Ctrl -> VantRepo: findById(vantagemId)
+activate VantRepo
 VantRepo -> DB: SELECT vantagem WHERE id = ?
+activate DB
 DB --> VantRepo: Vantagem
+deactivate DB
 VantRepo --> Ctrl: Vantagem
+deactivate VantRepo
 
 Ctrl -> ResgRepo: existsByAlunoIdAndVantagemId(alunoId, vantagemId)
+activate ResgRepo
 ResgRepo -> DB: SELECT EXISTS resgate
+activate DB
 DB --> ResgRepo: true/false
+deactivate DB
 ResgRepo --> Ctrl: Resultado
+deactivate ResgRepo
 
 alt Aluno já resgatou
     Ctrl --> Front: 400 {erro: já resgatou}
+    deactivate Ctrl
     Front --> A: Toast de erro
 else Sem estoque
     Ctrl --> Front: 400 {erro: sem unidades disponíveis}
+    deactivate Ctrl
     Front --> A: Toast de erro
 else Saldo insuficiente
     Ctrl --> Front: 400 {erro: saldo insuficiente}
+    deactivate Ctrl
     Front --> A: Toast de erro
 else Resgate permitido
-    Ctrl -> Ctrl: aluno.saldoAtual -= valorMoedas
-    Ctrl -> Ctrl: vantagem.quantidadeDisponivel -= 1
+    note right of Ctrl
+      Desconta moedas do aluno
+      e reduz o estoque da vantagem.
+    end note
     Ctrl -> AlunoRepo: update(aluno)
-    AlunoRepo -> DB: UPDATE aluno saldo
+    activate AlunoRepo
+    AlunoRepo -> DB: UPDATE aluno SET saldo_atual = ?
+    activate DB
+    DB --> AlunoRepo: OK
+    deactivate DB
+    AlunoRepo --> Ctrl: Aluno atualizado
+    deactivate AlunoRepo
+
     Ctrl -> VantRepo: update(vantagem)
-    VantRepo -> DB: UPDATE vantagem estoque
+    activate VantRepo
+    VantRepo -> DB: UPDATE vantagem SET quantidade_disponivel = ?
+    activate DB
+    DB --> VantRepo: OK
+    deactivate DB
+    VantRepo --> Ctrl: Vantagem atualizada
+    deactivate VantRepo
+
     Ctrl -> ResgRepo: save(resgate)
+    activate ResgRepo
     ResgRepo -> DB: INSERT resgate_vantagem
+    activate DB
     DB --> ResgRepo: Resgate salvo
-    Ctrl --> Front: 201 Created\nResgateResponse
+    deactivate DB
+    ResgRepo --> Ctrl: Resgate
+    deactivate ResgRepo
+
+    Ctrl --> Front: 201 Created
+ResgateResponse
+    deactivate Ctrl
     Front -> Front: Recarrega dados do aluno
     Front --> A: Toast de sucesso
 end
 
+deactivate Front
 @enduml

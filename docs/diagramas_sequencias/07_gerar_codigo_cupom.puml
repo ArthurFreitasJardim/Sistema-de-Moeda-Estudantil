@@ -1,28 +1,53 @@
 @startuml
 title UC07 - Gerar Código do Cupom
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
-actor Aluno as A
-boundary "Perfil do Aluno\nNext.js" as Front
-control "ResgateVantagemController\nMicronaut" as Ctrl
-control "CupomService" as CupomService
+control "ResgateVantagemController
+Micronaut" as Ctrl
+control "CupomService" as Cupom
+control "ResgateVantagemRepository" as Repo
 database "PostgreSQL" as DB
 
-A -> Front: Confirma resgate da vantagem
-Front -> Ctrl: POST /resgates
-Ctrl -> Ctrl: Valida aluno, vantagem, saldo e estoque
-Ctrl -> CupomService: gerarCodigoCupom(resgate)
-CupomService -> CupomService: Gera código único
-CupomService --> Ctrl: Código do cupom
-Ctrl -> DB: Salva resgate com código do cupom
-DB --> Ctrl: Resgate salvo
-Ctrl --> Front: 201 Created\n{resgate, codigoCupom}
-Front --> A: Exibe confirmação do resgate
-
+Ctrl -> Cupom: gerarCodigoCupom(resgate)
+activate Cupom
+note right of Cupom
+  Gera código único para o resgate,
+  por exemplo: CUPOM-ALUNO-ID-TIMESTAMP.
+end note
+Cupom -> Repo: associarCodigoAoResgate(codigo)
+activate Repo
+Repo -> DB: UPDATE resgate_vantagem SET codigo = ?
+activate DB
+DB --> Repo: OK
+deactivate DB
+Repo --> Cupom: Resgate atualizado
+deactivate Repo
+Cupom --> Ctrl: Código do cupom
+deactivate Cupom
 @enduml

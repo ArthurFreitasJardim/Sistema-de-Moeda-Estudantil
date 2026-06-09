@@ -1,31 +1,66 @@
 @startuml
-title UC13 - Adicionar 1.000 Moedas Semestralmente
+title UC13 - Adicionar 1.000 Moedas Semestral
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
-actor "Tempo (Semestral)" as Tempo
-control "Agendador Semestral\nMicronaut" as Scheduler
-control "ProfessorRepository" as ProfRepo
+actor "Tempo
+Semestral" as T
+control "Job Semestral
+Micronaut" as Job
+control "ProfessorRepository" as Repo
 database "PostgreSQL" as DB
 
-Tempo -> Scheduler: Dispara rotina semestral
-Scheduler -> ProfRepo: findAll()
-ProfRepo -> DB: SELECT professores
-DB --> ProfRepo: Lista de professores
-ProfRepo --> Scheduler: Professores
+T -> Job: Dispara rotina semestral
+activate Job
+Job -> Repo: findAll()
+activate Repo
+Repo -> DB: SELECT professores
+activate DB
+DB --> Repo: Lista de professores
+deactivate DB
+Repo --> Job: Professores
+deactivate Repo
 
 loop Para cada professor
-    Scheduler -> Scheduler: saldoCorrente += 1000
-    Scheduler -> ProfRepo: update(professor)
-    ProfRepo -> DB: UPDATE professor saldo_corrente
-    DB --> ProfRepo: Atualizado
+    note right of Job
+      Define saldoCorrente += 1000
+      para novo semestre.
+    end note
+    Job -> Repo: update(professor)
+    activate Repo
+    Repo -> DB: UPDATE professor SET saldo_corrente = saldo_corrente + 1000
+    activate DB
+    DB --> Repo: OK
+    deactivate DB
+    Repo --> Job: Professor atualizado
+    deactivate Repo
 end
 
-Scheduler --> Tempo: Rotina concluída
-
+Job --> T: Rotina concluída
+deactivate Job
 @enduml

@@ -1,38 +1,68 @@
 @startuml
 title UC09 - Consultar Extrato da Conta
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
 actor Aluno as A
-actor Professor as P
-boundary "Tela de Perfil/Painel\nNext.js" as Front
-control "TransacaoController\nMicronaut" as Ctrl
-control "TransacaoRepository" as Repo
+boundary "Perfil do Aluno
+Next.js" as Front
+control "AlunoController
+Micronaut" as AlunoCtrl
+control "TransacaoController
+Micronaut" as TransCtrl
+control "TransacaoRepository" as TransRepo
 database "PostgreSQL" as DB
 
-alt Consulta pelo aluno
-    A -> Front: Acessa perfil do aluno
-    Front -> Ctrl: GET /transacoes/aluno/{alunoId}
-    Ctrl -> Repo: findByDestinatarioId(alunoId)
-    Repo -> DB: SELECT transacoes recebidas
-    DB --> Repo: Lista de transações
-    Repo --> Ctrl: Transações
-    Ctrl --> Front: 200 OK\nTransacaoExtratoResponse[]
-    Front --> A: Exibe extrato de moedas recebidas
-else Consulta pelo professor
-    P -> Front: Acessa painel do professor
-    Front -> Ctrl: GET /transacoes/professor/{professorId}
-    Ctrl -> Repo: findByRemetenteId(professorId)
-    Repo -> DB: SELECT transacoes enviadas
-    DB --> Repo: Lista de transações
-    Repo --> Ctrl: Transações
-    Ctrl --> Front: 200 OK\nTransacaoProfessorResponse[]
-    Front --> P: Exibe histórico de envios
-end
+A -> Front: Acessa perfil do aluno
+activate Front
+Front -> AlunoCtrl: GET /alunos/{id}
+activate AlunoCtrl
+AlunoCtrl -> DB: SELECT aluno WHERE id = ?
+activate DB
+DB --> AlunoCtrl: Dados do aluno
+deactivate DB
+AlunoCtrl --> Front: AlunoResponse
+deactivate AlunoCtrl
 
+Front -> TransCtrl: GET /transacoes/aluno/{id}
+activate TransCtrl
+TransCtrl -> TransRepo: findByDestinatarioId(alunoId)
+activate TransRepo
+TransRepo -> DB: SELECT transacoes recebidas
+activate DB
+DB --> TransRepo: Lista de transações
+deactivate DB
+TransRepo --> TransCtrl: List<Transacao>
+deactivate TransRepo
+TransCtrl --> Front: ExtratoResponse[]
+deactivate TransCtrl
+
+Front -> Front: Renderiza saldo e histórico
+Front --> A: Exibe extrato da conta
+deactivate Front
 @enduml

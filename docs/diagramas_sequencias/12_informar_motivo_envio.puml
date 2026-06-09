@@ -1,30 +1,63 @@
 @startuml
 title UC12 - Informar Motivo do Envio
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
 actor Professor as P
-boundary "Painel do Professor\nNext.js" as Front
-control "TransacaoController\nMicronaut" as Ctrl
-database "PostgreSQL" as DB
+boundary "Painel do Professor
+Next.js" as Front
+control "TransacaoController
+Micronaut" as Ctrl
 
-P -> Front: Digita o motivo do reconhecimento
-Front -> Front: Valida motivo obrigatório
+P -> Front: Preenche campo motivo
+activate Front
+note right of Front
+  O motivo é obrigatório
+  para justificar o reconhecimento.
+end note
 
+Front -> Ctrl: POST /transacoes
+com motivo
+activate Ctrl
 alt Motivo vazio
-    Front --> P: Toast de aviso\nInforme o motivo do envio
+    Ctrl --> Front: 400 Bad Request
+{erro: motivo obrigatório}
+    deactivate Ctrl
+    Front --> P: Toast de erro
 else Motivo preenchido
-    Front -> Ctrl: POST /transacoes\n{motivo, valor, remetenteId, destinatarioId}
-    Ctrl -> Ctrl: Valida motivo não nulo e não vazio
-    Ctrl -> DB: INSERT transacao com motivo
-    DB --> Ctrl: Transação salva
-    Ctrl --> Front: 201 Created
-    Front --> P: Toast de sucesso
+    note right of Ctrl
+      Mantém o motivo na transação
+      e segue o envio de moedas.
+    end note
+    Ctrl --> Front: Continua caso de uso UC10
+    deactivate Ctrl
+    Front --> P: Envio segue normalmente
 end
 
+deactivate Front
 @enduml

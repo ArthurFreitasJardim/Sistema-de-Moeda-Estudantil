@@ -1,47 +1,89 @@
 @startuml
 title UC11 - Notificar Aluno por E-mail
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
-queue "RabbitMQ\nFila: moedas.email" as Rabbit
-control "EmailConsumer\nMicronaut" as Consumer
+queue "RabbitMQ
+moedas.email" as MQ
+control "EmailConsumer" as Consumer
 control "TransacaoRepository" as TransRepo
 control "ProfessorRepository" as ProfRepo
 control "AlunoRepository" as AlunoRepo
 control "EmailService" as EmailService
 database "PostgreSQL" as DB
-actor "Sistema de E-mail" as Mail
+collections "Gmail SMTP" as SMTP
 actor Aluno as A
+actor Professor as P
 
-Rabbit -> Consumer: Entrega EnvioMoedasEvent\n{transacaoId, professorId, alunoId}
+MQ -> Consumer: Entrega EnvioMoedasEvent
+activate Consumer
 Consumer -> TransRepo: findById(transacaoId)
+activate TransRepo
 TransRepo -> DB: SELECT transacao
+activate DB
 DB --> TransRepo: Transação
+deactivate DB
 TransRepo --> Consumer: Transação
+deactivate TransRepo
 
 Consumer -> ProfRepo: findById(professorId)
+activate ProfRepo
 ProfRepo -> DB: SELECT professor
+activate DB
 DB --> ProfRepo: Professor
+deactivate DB
 ProfRepo --> Consumer: Professor
+deactivate ProfRepo
 
 Consumer -> AlunoRepo: findById(alunoId)
+activate AlunoRepo
 AlunoRepo -> DB: SELECT aluno
+activate DB
 DB --> AlunoRepo: Aluno
+deactivate DB
 AlunoRepo --> Consumer: Aluno
+deactivate AlunoRepo
 
-alt Dados completos
-    Consumer -> EmailService: enviarConfirmacaoRecebimentoParaAluno(professor, aluno, transacao)
-    EmailService -> Mail: SMTP Gmail\nE-mail de recebimento
-    Mail --> A: E-mail entregue
-    Mail --> EmailService: Envio confirmado
-    Consumer -> Rabbit: ACK
-else Dados incompletos
-    Consumer -> Rabbit: Registra falha/descarta ou reprocessa
-end
+Consumer -> EmailService: enviar e-mails de confirmação
+activate EmailService
+EmailService -> SMTP: E-mail para professor
+activate SMTP
+SMTP --> EmailService: OK
+deactivate SMTP
+EmailService -> SMTP: E-mail para aluno
+activate SMTP
+SMTP --> EmailService: OK
+deactivate SMTP
+EmailService --> Consumer: E-mails enviados
+deactivate EmailService
+Consumer --> MQ: ACK da mensagem
+deactivate Consumer
 
+SMTP --> P: Recebe confirmação de envio
+SMTP --> A: Recebe aviso de moedas
 @enduml

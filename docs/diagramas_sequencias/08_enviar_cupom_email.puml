@@ -1,35 +1,66 @@
 @startuml
-title UC08 - Enviar Cupom por E-mail (Aluno e Empresa)
+title UC08 - Enviar Cupom por E-mail
 
-' Ativa as barras/caixas de duração nas lifelines
-autoactivate on
-skinparam SequenceLifeLineBorderColor #6B7280
-skinparam SequenceLifeLineBackgroundColor #F3F4F6
-skinparam sequenceActivationBorderColor #111827
-skinparam sequenceActivationBackgroundColor #DDEBFF
+' Configuração visual melhorada
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequence {
+    ArrowColor #374151
+    LifeLineBorderColor #9CA3AF
+    LifeLineBackgroundColor #F9FAFB
+    ParticipantBorderColor #374151
+    ParticipantBackgroundColor #E8F5FF
+    ActorBorderColor #374151
+    ActorBackgroundColor #FFFFFF
+    DatabaseBorderColor #374151
+    DatabaseBackgroundColor #F3E8FF
+    BoxBorderColor #9CA3AF
+    BoxBackgroundColor #FAFAFA
+    GroupBorderColor #9CA3AF
+    GroupBackgroundColor #FFFFFF
+    ActivationBorderColor #111827
+    ActivationBackgroundColor #CFE3FF
+    ParticipantPadding 28
+    BoxPadding 10
+    MessageAlign center
+}
+skinparam maxMessageSize 70
 
-actor Aluno as A
-boundary "Perfil do Aluno\nNext.js" as Front
-control "ResgateVantagemController\nMicronaut" as Ctrl
-queue "RabbitMQ\nFila: cupons.email" as Rabbit
+control "ResgateVantagemController
+Micronaut" as Ctrl
+queue "RabbitMQ
+Fila de E-mail" as MQ
 control "EmailConsumer" as Consumer
 control "EmailService" as EmailService
-actor "Sistema de E-mail" as Mail
+collections "Gmail SMTP" as SMTP
+actor Aluno as A
+actor "Empresa Parceira" as E
 
-A -> Front: Resgata vantagem
-Front -> Ctrl: POST /resgates
-Ctrl -> Ctrl: Salva resgate e gera cupom
-Ctrl -> Rabbit: Publica evento\nCupomResgatadoEvent
-Ctrl --> Front: 201 Created\nResgateResponse
-Front --> A: Toast de sucesso
+Ctrl -> MQ: Publica evento
+CupomResgatadoEvent
+activate MQ
+MQ --> Ctrl: Mensagem aceita
+deactivate MQ
 
-Rabbit -> Consumer: Entrega mensagem
-Consumer -> EmailService: enviarCupomAluno(resgate)
-EmailService -> Mail: Envia e-mail para aluno
-Mail --> EmailService: Confirma envio
-Consumer -> EmailService: enviarCupomEmpresa(resgate)
-EmailService -> Mail: Envia e-mail para empresa
-Mail --> EmailService: Confirma envio
-Consumer -> Rabbit: ACK mensagem
+MQ -> Consumer: Entrega mensagem
+activate Consumer
+Consumer -> EmailService: enviarCupomAlunoEmpresa(evento)
+activate EmailService
+EmailService -> SMTP: Envia e-mail para aluno
+activate SMTP
+SMTP --> EmailService: OK
+deactivate SMTP
+EmailService -> SMTP: Envia e-mail para empresa
+activate SMTP
+SMTP --> EmailService: OK
+deactivate SMTP
+EmailService --> Consumer: E-mails enviados
+deactivate EmailService
+Consumer --> MQ: ACK da mensagem
+deactivate Consumer
 
+SMTP --> A: Recebe cupom por e-mail
+SMTP --> E: Recebe aviso do resgate
 @enduml
