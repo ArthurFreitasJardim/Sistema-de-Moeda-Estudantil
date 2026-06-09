@@ -1,89 +1,94 @@
 @startuml
 title UC02 - Cadastrar Aluno
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
 actor Aluno as A
-boundary "Tela de Cadastro
-Next.js" as Front
-control "AlunoController
-Micronaut" as Ctrl
+boundary "Tela de Cadastro\nNext.js" as Front
+control "AlunoController\nMicronaut" as Ctrl
 control "InstituicaoRepository" as InstRepo
 control "AlunoRepository" as AlunoRepo
 database "PostgreSQL" as DB
 
 A -> Front: Preenche dados do aluno
 activate Front
+
 note right of Front
-  Remove máscara de CPF/RG,
+  Remove mascara de CPF/RG,
   normaliza e-mail e valida campos.
 end note
 
-Front -> Ctrl: POST /alunos
-AlunoRequest
+Front -> Ctrl: POST /alunos\nAlunoRequest
 activate Ctrl
+
 note right of Ctrl
   Valida obrigatoriedade dos campos
-  e prepara a instituição informada.
+  e prepara a instituicao informada.
 end note
 
 Ctrl -> InstRepo: findByNome(instituicaoNome)
 activate InstRepo
+
 InstRepo -> DB: SELECT instituicao WHERE nome = ?
 activate DB
-DB --> InstRepo: Instituição ou vazio
+
+DB --> InstRepo: Instituicao ou vazio
 deactivate DB
+
 InstRepo --> Ctrl: Optional<Instituicao>
 deactivate InstRepo
 
-alt Instituição não existe
+alt Instituicao nao existe
     Ctrl -> InstRepo: save(novaInstituicao)
     activate InstRepo
+
     InstRepo -> DB: INSERT instituicao
     activate DB
-    DB --> InstRepo: Instituição salva
+
+    DB --> InstRepo: Instituicao salva
     deactivate DB
-    InstRepo --> Ctrl: Instituição
+
+    InstRepo --> Ctrl: Instituicao
     deactivate InstRepo
 end
 
 Ctrl -> AlunoRepo: save(aluno)
 activate AlunoRepo
+
 AlunoRepo -> DB: INSERT usuario/aluno
 activate DB
+
 DB --> AlunoRepo: Aluno salvo
 deactivate DB
+
 AlunoRepo --> Ctrl: Aluno
 deactivate AlunoRepo
-Ctrl --> Front: 201 Created
-AlunoResponse
+
+Ctrl --> Front: 201 Created\nAlunoResponse
 deactivate Ctrl
-Front --> A: Exibe toast de sucesso
-e atualiza lista
+
+Front --> A: Exibe toast de sucesso\ne atualiza lista
 deactivate Front
+
 @enduml
