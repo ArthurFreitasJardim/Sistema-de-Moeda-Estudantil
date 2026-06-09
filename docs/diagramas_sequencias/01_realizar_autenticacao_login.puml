@@ -33,5 +33,3 @@ else Credenciais inválidas
 end
 
 @enduml
-
-activate id activate
