@@ -1,6 +1,13 @@
 @startuml
 title UC10 - Enviar Moedas de Mérito
 
+' Ativa as barras/caixas de duração nas lifelines
+autoactivate on
+skinparam SequenceLifeLineBorderColor #6B7280
+skinparam SequenceLifeLineBackgroundColor #F3F4F6
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #DDEBFF
+
 actor Professor as P
 boundary "Painel do Professor\nNext.js" as Front
 control "TransacaoController\nMicronaut" as Ctrl

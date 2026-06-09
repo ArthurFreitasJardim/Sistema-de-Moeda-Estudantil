@@ -1,6 +1,13 @@
 @startuml
 title UC11 - Notificar Aluno por E-mail
 
+' Ativa as barras/caixas de duração nas lifelines
+autoactivate on
+skinparam SequenceLifeLineBorderColor #6B7280
+skinparam SequenceLifeLineBackgroundColor #F3F4F6
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #DDEBFF
+
 queue "RabbitMQ\nFila: moedas.email" as Rabbit
 control "EmailConsumer\nMicronaut" as Consumer
 control "TransacaoRepository" as TransRepo

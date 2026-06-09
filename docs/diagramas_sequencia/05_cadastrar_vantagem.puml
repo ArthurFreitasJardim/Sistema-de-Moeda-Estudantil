@@ -1,6 +1,13 @@
 @startuml
 title UC05 - Cadastrar Vantagem
 
+' Ativa as barras/caixas de duração nas lifelines
+autoactivate on
+skinparam SequenceLifeLineBorderColor #6B7280
+skinparam SequenceLifeLineBackgroundColor #F3F4F6
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #DDEBFF
+
 actor "Empresa Parceira" as E
 boundary "Painel da Empresa\nNext.js" as Front
 control "VantagemController\nMicronaut" as Ctrl

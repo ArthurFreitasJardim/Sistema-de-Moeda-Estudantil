@@ -1,6 +1,13 @@
 @startuml
 title UC08 - Enviar Cupom por E-mail (Aluno e Empresa)
 
+' Ativa as barras/caixas de duração nas lifelines
+autoactivate on
+skinparam SequenceLifeLineBorderColor #6B7280
+skinparam SequenceLifeLineBackgroundColor #F3F4F6
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #DDEBFF
+
 actor Aluno as A
 boundary "Perfil do Aluno\nNext.js" as Front
 control "ResgateVantagemController\nMicronaut" as Ctrl

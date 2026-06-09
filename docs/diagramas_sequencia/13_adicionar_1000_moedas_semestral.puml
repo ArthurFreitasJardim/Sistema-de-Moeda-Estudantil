@@ -1,6 +1,13 @@
 @startuml
 title UC13 - Adicionar 1.000 Moedas Semestralmente
 
+' Ativa as barras/caixas de duração nas lifelines
+autoactivate on
+skinparam SequenceLifeLineBorderColor #6B7280
+skinparam SequenceLifeLineBackgroundColor #F3F4F6
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #DDEBFF
+
 actor "Tempo (Semestral)" as Tempo
 control "Agendador Semestral\nMicronaut" as Scheduler
 control "ProfessorRepository" as ProfRepo
