@@ -1,53 +1,55 @@
 @startuml
-title UC07 - Gerar Código do Cupom
+title UC07 - Gerar Codigo do Cupom
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
-control "ResgateVantagemController
-Micronaut" as Ctrl
+control "ResgateVantagemController\nMicronaut" as Ctrl
 control "CupomService" as Cupom
 control "ResgateVantagemRepository" as Repo
 database "PostgreSQL" as DB
 
 Ctrl -> Cupom: gerarCodigoCupom(resgate)
 activate Cupom
+
 note right of Cupom
-  Gera código único para o resgate,
+  Gera codigo unico para o resgate,
   por exemplo: CUPOM-ALUNO-ID-TIMESTAMP.
 end note
+
 Cupom -> Repo: associarCodigoAoResgate(codigo)
 activate Repo
+
 Repo -> DB: UPDATE resgate_vantagem SET codigo = ?
 activate DB
+
 DB --> Repo: OK
 deactivate DB
+
 Repo --> Cupom: Resgate atualizado
 deactivate Repo
-Cupom --> Ctrl: Código do cupom
+
+Cupom --> Ctrl: Codigo do cupom
 deactivate Cupom
+
 @enduml
