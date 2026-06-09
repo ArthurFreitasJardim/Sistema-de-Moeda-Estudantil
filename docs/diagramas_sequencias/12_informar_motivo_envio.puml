@@ -1,63 +1,58 @@
 @startuml
 title UC12 - Informar Motivo do Envio
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
 actor Professor as P
-boundary "Painel do Professor
-Next.js" as Front
-control "TransacaoController
-Micronaut" as Ctrl
+boundary "Painel do Professor\nNext.js" as Front
+control "TransacaoController\nMicronaut" as Ctrl
 
 P -> Front: Preenche campo motivo
 activate Front
+
 note right of Front
-  O motivo é obrigatório
+  O motivo e obrigatorio
   para justificar o reconhecimento.
 end note
 
-Front -> Ctrl: POST /transacoes
-com motivo
+Front -> Ctrl: POST /transacoes\ncom motivo
 activate Ctrl
+
 alt Motivo vazio
-    Ctrl --> Front: 400 Bad Request
-{erro: motivo obrigatório}
-    deactivate Ctrl
+    Ctrl --> Front: 400 Bad Request\n{erro: motivo obrigatorio}
     Front --> P: Toast de erro
 else Motivo preenchido
     note right of Ctrl
-      Mantém o motivo na transação
+      Mantem o motivo na transacao
       e segue o envio de moedas.
     end note
+
     Ctrl --> Front: Continua caso de uso UC10
-    deactivate Ctrl
     Front --> P: Envio segue normalmente
 end
 
+deactivate Ctrl
 deactivate Front
+
 @enduml
