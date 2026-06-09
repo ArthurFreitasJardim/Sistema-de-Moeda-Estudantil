@@ -1,66 +1,68 @@
 @startuml
 title UC08 - Enviar Cupom por E-mail
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
-control "ResgateVantagemController
-Micronaut" as Ctrl
-queue "RabbitMQ
-Fila de E-mail" as MQ
+control "ResgateVantagemController\nMicronaut" as Ctrl
+queue "RabbitMQ\nFila de E-mail" as MQ
 control "EmailConsumer" as Consumer
 control "EmailService" as EmailService
 collections "Gmail SMTP" as SMTP
 actor Aluno as A
 actor "Empresa Parceira" as E
 
-Ctrl -> MQ: Publica evento
-CupomResgatadoEvent
+Ctrl -> MQ: Publica evento\nCupomResgatadoEvent
 activate MQ
+
 MQ --> Ctrl: Mensagem aceita
 deactivate MQ
 
 MQ -> Consumer: Entrega mensagem
 activate Consumer
+
 Consumer -> EmailService: enviarCupomAlunoEmpresa(evento)
 activate EmailService
+
 EmailService -> SMTP: Envia e-mail para aluno
 activate SMTP
+
 SMTP --> EmailService: OK
 deactivate SMTP
+
 EmailService -> SMTP: Envia e-mail para empresa
 activate SMTP
+
 SMTP --> EmailService: OK
 deactivate SMTP
+
 EmailService --> Consumer: E-mails enviados
 deactivate EmailService
+
 Consumer --> MQ: ACK da mensagem
 deactivate Consumer
 
 SMTP --> A: Recebe cupom por e-mail
 SMTP --> E: Recebe aviso do resgate
+
 @enduml
