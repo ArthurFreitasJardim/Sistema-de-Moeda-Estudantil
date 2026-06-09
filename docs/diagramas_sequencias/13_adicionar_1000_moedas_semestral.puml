@@ -1,48 +1,46 @@
 @startuml
 title UC13 - Adicionar 1.000 Moedas Semestral
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
-actor "Tempo
-Semestral" as T
-control "Job Semestral
-Micronaut" as Job
+actor "Tempo\nSemestral" as T
+control "Job Semestral\nMicronaut" as Job
 control "ProfessorRepository" as Repo
 database "PostgreSQL" as DB
 
 T -> Job: Dispara rotina semestral
 activate Job
+
 Job -> Repo: findAll()
 activate Repo
+
 Repo -> DB: SELECT professores
 activate DB
+
 DB --> Repo: Lista de professores
 deactivate DB
+
 Repo --> Job: Professores
 deactivate Repo
 
@@ -51,16 +49,21 @@ loop Para cada professor
       Define saldoCorrente += 1000
       para novo semestre.
     end note
+
     Job -> Repo: update(professor)
     activate Repo
+
     Repo -> DB: UPDATE professor SET saldo_corrente = saldo_corrente + 1000
     activate DB
+
     DB --> Repo: OK
     deactivate DB
+
     Repo --> Job: Professor atualizado
     deactivate Repo
 end
 
-Job --> T: Rotina concluída
+Job --> T: Rotina concluida
 deactivate Job
+
 @enduml
