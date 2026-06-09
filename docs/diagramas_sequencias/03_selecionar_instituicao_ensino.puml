@@ -1,77 +1,84 @@
-@startuml
-title UC03 - Selecionar Instituição de Ensino
+Aqui está o `03` corrigido no mesmo padrão, sem comentários no código:
 
-' Configuração visual melhorada
+```plantuml
+@startuml
+title UC03 - Selecionar Instituicao de Ensino
+
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
 actor Aluno as A
-boundary "Formulário de Cadastro
-Next.js" as Front
-control "AlunoController
-Micronaut" as Ctrl
+boundary "Formulario de Cadastro\nNext.js" as Front
+control "AlunoController\nMicronaut" as Ctrl
 control "InstituicaoRepository" as Repo
 database "PostgreSQL" as DB
 
-A -> Front: Informa nome da instituição
+A -> Front: Informa nome da instituicao
 activate Front
+
 note right of Front
-  O nome da instituição é enviado
+  O nome da instituicao e enviado
   junto com o cadastro do aluno.
 end note
 
-Front -> Ctrl: POST /alunos
-com instituicaoNome
+Front -> Ctrl: POST /alunos\ncom instituicaoNome
 activate Ctrl
+
 Ctrl -> Repo: findByNome(instituicaoNome)
 activate Repo
+
 Repo -> DB: SELECT instituicao WHERE nome = ?
 activate DB
+
 DB --> Repo: Resultado
 deactivate DB
+
 Repo --> Ctrl: Optional<Instituicao>
 deactivate Repo
 
-alt Instituição encontrada
+alt Instituicao encontrada
     note right of Ctrl
-      Associa aluno à instituição existente.
+      Associa aluno a instituicao existente.
     end note
-else Instituição não encontrada
+else Instituicao nao encontrada
     Ctrl -> Repo: save(novaInstituicao)
     activate Repo
+
     Repo -> DB: INSERT instituicao
     activate DB
-    DB --> Repo: Instituição criada
+
+    DB --> Repo: Instituicao criada
     deactivate DB
-    Repo --> Ctrl: Instituição
+
+    Repo --> Ctrl: Instituicao
     deactivate Repo
 end
 
-Ctrl --> Front: Instituição associada ao aluno
+Ctrl --> Front: Instituicao associada ao aluno
 deactivate Ctrl
+
 Front --> A: Cadastro continua normalmente
 deactivate Front
+
 @enduml
+```
