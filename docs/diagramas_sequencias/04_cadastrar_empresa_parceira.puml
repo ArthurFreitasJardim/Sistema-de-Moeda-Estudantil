@@ -1,69 +1,68 @@
 @startuml
 title UC04 - Cadastrar Empresa Parceira
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
 actor "Empresa Parceira" as E
-boundary "Tela de Cadastro
-Next.js" as Front
-control "EmpresaController
-Micronaut" as Ctrl
+boundary "Tela de Cadastro\nNext.js" as Front
+control "EmpresaController\nMicronaut" as Ctrl
 control "EmpresaRepository" as Repo
 database "PostgreSQL" as DB
 
 E -> Front: Preenche dados da empresa
 activate Front
+
 note right of Front
   Normaliza e-mail,
-  remove máscara do CNPJ
+  remove mascara do CNPJ
   e valida campos.
 end note
 
-Front -> Ctrl: POST /empresas
-EmpresaRequest
+Front -> Ctrl: POST /empresas\nEmpresaRequest
 activate Ctrl
+
 note right of Ctrl
-  Valida dados obrigatórios
+  Valida dados obrigatorios
   e regras de unicidade.
 end note
 
 Ctrl -> Repo: save(empresa)
 activate Repo
+
 Repo -> DB: INSERT usuario/empresa
 activate DB
+
 DB --> Repo: Empresa salva
 deactivate DB
+
 Repo --> Ctrl: Empresa
 deactivate Repo
-Ctrl --> Front: 201 Created
-EmpresaResponse
+
+Ctrl --> Front: 201 Created\nEmpresaResponse
 deactivate Ctrl
-Front --> E: Exibe toast de sucesso
-e atualiza lista
+
+Front --> E: Exibe toast de sucesso\ne atualiza lista
 deactivate Front
+
 @enduml
