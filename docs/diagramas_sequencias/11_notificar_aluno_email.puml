@@ -1,35 +1,30 @@
 @startuml
 title UC11 - Notificar Aluno por E-mail
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
-queue "RabbitMQ
-moedas.email" as MQ
+queue "RabbitMQ\nmoedas.email" as MQ
 control "EmailConsumer" as Consumer
 control "TransacaoRepository" as TransRepo
 control "ProfessorRepository" as ProfRepo
@@ -42,48 +37,65 @@ actor Professor as P
 
 MQ -> Consumer: Entrega EnvioMoedasEvent
 activate Consumer
+
 Consumer -> TransRepo: findById(transacaoId)
 activate TransRepo
+
 TransRepo -> DB: SELECT transacao
 activate DB
-DB --> TransRepo: Transação
+
+DB --> TransRepo: Transacao
 deactivate DB
-TransRepo --> Consumer: Transação
+
+TransRepo --> Consumer: Transacao
 deactivate TransRepo
 
 Consumer -> ProfRepo: findById(professorId)
 activate ProfRepo
+
 ProfRepo -> DB: SELECT professor
 activate DB
+
 DB --> ProfRepo: Professor
 deactivate DB
+
 ProfRepo --> Consumer: Professor
 deactivate ProfRepo
 
 Consumer -> AlunoRepo: findById(alunoId)
 activate AlunoRepo
+
 AlunoRepo -> DB: SELECT aluno
 activate DB
+
 DB --> AlunoRepo: Aluno
 deactivate DB
+
 AlunoRepo --> Consumer: Aluno
 deactivate AlunoRepo
 
-Consumer -> EmailService: enviar e-mails de confirmação
+Consumer -> EmailService: enviar e-mails de confirmacao
 activate EmailService
+
 EmailService -> SMTP: E-mail para professor
 activate SMTP
+
 SMTP --> EmailService: OK
 deactivate SMTP
+
 EmailService -> SMTP: E-mail para aluno
 activate SMTP
+
 SMTP --> EmailService: OK
 deactivate SMTP
+
 EmailService --> Consumer: E-mails enviados
 deactivate EmailService
+
 Consumer --> MQ: ACK da mensagem
 deactivate Consumer
 
-SMTP --> P: Recebe confirmação de envio
+SMTP --> P: Recebe confirmacao de envio
 SMTP --> A: Recebe aviso de moedas
+
 @enduml
