@@ -1,113 +1,125 @@
 @startuml
-title UC10 - Enviar Moedas de Mérito
+title UC10 - Enviar Moedas de Merito
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
 actor Professor as P
-boundary "Painel do Professor
-Next.js" as Front
-control "TransacaoController
-Micronaut" as Ctrl
+boundary "Painel do Professor\nNext.js" as Front
+control "TransacaoController\nMicronaut" as Ctrl
 control "ProfessorRepository" as ProfRepo
 control "AlunoRepository" as AlunoRepo
 control "TransacaoRepository" as TransRepo
-queue "RabbitMQ
-moedas.email" as MQ
+queue "RabbitMQ\nmoedas.email" as MQ
 database "PostgreSQL" as DB
 
 P -> Front: Informa aluno, valor e motivo
 activate Front
+
 note right of Front
   Valida campos, valor positivo
-  e saldo disponível do professor.
+  e saldo disponivel do professor.
 end note
-Front -> Ctrl: POST /transacoes
-CriarTransacaoRequest
+
+Front -> Ctrl: POST /transacoes\nCriarTransacaoRequest
 activate Ctrl
 
 Ctrl -> ProfRepo: findById(remetenteId)
 activate ProfRepo
+
 ProfRepo -> DB: SELECT professor
 activate DB
+
 DB --> ProfRepo: Professor
 deactivate DB
+
 ProfRepo --> Ctrl: Professor
 deactivate ProfRepo
 
 Ctrl -> AlunoRepo: findById(destinatarioId)
 activate AlunoRepo
+
 AlunoRepo -> DB: SELECT aluno
 activate DB
+
 DB --> AlunoRepo: Aluno
 deactivate DB
+
 AlunoRepo --> Ctrl: Aluno
 deactivate AlunoRepo
 
 note right of Ctrl
-  Verifica saldo, curso e instituição.
+  Verifica saldo, curso e instituicao.
   Em seguida atualiza saldos.
 end note
 
 Ctrl -> ProfRepo: update(professor)
 activate ProfRepo
+
 ProfRepo -> DB: UPDATE saldo_corrente
 activate DB
+
 DB --> ProfRepo: OK
 deactivate DB
+
 ProfRepo --> Ctrl: Professor atualizado
 deactivate ProfRepo
 
 Ctrl -> AlunoRepo: update(aluno)
 activate AlunoRepo
+
 AlunoRepo -> DB: UPDATE saldo_atual
 activate DB
+
 DB --> AlunoRepo: OK
 deactivate DB
+
 AlunoRepo --> Ctrl: Aluno atualizado
 deactivate AlunoRepo
 
 Ctrl -> TransRepo: save(transacao)
 activate TransRepo
+
 TransRepo -> DB: INSERT transacao
 activate DB
-DB --> TransRepo: Transação salva
+
+DB --> TransRepo: Transacao salva
 deactivate DB
-TransRepo --> Ctrl: Transação
+
+TransRepo --> Ctrl: Transacao
 deactivate TransRepo
 
 Ctrl -> MQ: Publica EnvioMoedasEvent
 activate MQ
+
 MQ --> Ctrl: Mensagem aceita
 deactivate MQ
-Ctrl --> Front: 201 Created
-StatusResponse
+
+Ctrl --> Front: 201 Created\nStatusResponse
 deactivate Ctrl
-Front -> Front: Recarrega saldo e histórico
+
+Front -> Front: Recarrega saldo e historico
 Front --> P: Toast de sucesso
 deactivate Front
+
 @enduml
