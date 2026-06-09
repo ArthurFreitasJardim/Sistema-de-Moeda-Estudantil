@@ -1,38 +1,32 @@
 @startuml
 title UC06 - Resgatar Vantagem
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
 actor Aluno as A
-boundary "Perfil do Aluno
-Next.js" as Front
-control "ResgateVantagemController
-Micronaut" as Ctrl
+boundary "Perfil do Aluno\nNext.js" as Front
+control "ResgateVantagemController\nMicronaut" as Ctrl
 control "AlunoRepository" as AlunoRepo
 control "VantagemRepository" as VantRepo
 control "ResgateVantagemRepository" as ResgRepo
@@ -40,93 +34,109 @@ database "PostgreSQL" as DB
 
 A -> Front: Clica em Resgatar Vantagem
 activate Front
+
 note right of Front
   Valida saldo, estoque
-  e se a vantagem já foi resgatada
-  pelos dados já carregados na tela.
+  e se a vantagem ja foi resgatada
+  pelos dados ja carregados na tela.
 end note
 
-Front -> Ctrl: POST /resgates
-{alunoId, vantagemId}
+Front -> Ctrl: POST /resgates\n{alunoId, vantagemId}
 activate Ctrl
 
 Ctrl -> AlunoRepo: findById(alunoId)
 activate AlunoRepo
+
 AlunoRepo -> DB: SELECT aluno WHERE id = ?
 activate DB
+
 DB --> AlunoRepo: Aluno
 deactivate DB
+
 AlunoRepo --> Ctrl: Aluno
 deactivate AlunoRepo
 
 Ctrl -> VantRepo: findById(vantagemId)
 activate VantRepo
+
 VantRepo -> DB: SELECT vantagem WHERE id = ?
 activate DB
+
 DB --> VantRepo: Vantagem
 deactivate DB
+
 VantRepo --> Ctrl: Vantagem
 deactivate VantRepo
 
 Ctrl -> ResgRepo: existsByAlunoIdAndVantagemId(alunoId, vantagemId)
 activate ResgRepo
+
 ResgRepo -> DB: SELECT EXISTS resgate
 activate DB
+
 DB --> ResgRepo: true/false
 deactivate DB
+
 ResgRepo --> Ctrl: Resultado
 deactivate ResgRepo
 
-alt Aluno já resgatou
-    Ctrl --> Front: 400 {erro: já resgatou}
-    deactivate Ctrl
-    Front --> A: Toast de erro
+alt Aluno ja resgatou
+    Ctrl --> Front: 400 Bad Request\n{erro: ja resgatou}
+    Front --> A: Exibe toast de erro
 else Sem estoque
-    Ctrl --> Front: 400 {erro: sem unidades disponíveis}
-    deactivate Ctrl
-    Front --> A: Toast de erro
+    Ctrl --> Front: 400 Bad Request\n{erro: sem unidades disponiveis}
+    Front --> A: Exibe toast de erro
 else Saldo insuficiente
-    Ctrl --> Front: 400 {erro: saldo insuficiente}
-    deactivate Ctrl
-    Front --> A: Toast de erro
+    Ctrl --> Front: 400 Bad Request\n{erro: saldo insuficiente}
+    Front --> A: Exibe toast de erro
 else Resgate permitido
     note right of Ctrl
       Desconta moedas do aluno
       e reduz o estoque da vantagem.
     end note
+
     Ctrl -> AlunoRepo: update(aluno)
     activate AlunoRepo
+
     AlunoRepo -> DB: UPDATE aluno SET saldo_atual = ?
     activate DB
+
     DB --> AlunoRepo: OK
     deactivate DB
+
     AlunoRepo --> Ctrl: Aluno atualizado
     deactivate AlunoRepo
 
     Ctrl -> VantRepo: update(vantagem)
     activate VantRepo
+
     VantRepo -> DB: UPDATE vantagem SET quantidade_disponivel = ?
     activate DB
+
     DB --> VantRepo: OK
     deactivate DB
+
     VantRepo --> Ctrl: Vantagem atualizada
     deactivate VantRepo
 
     Ctrl -> ResgRepo: save(resgate)
     activate ResgRepo
+
     ResgRepo -> DB: INSERT resgate_vantagem
     activate DB
+
     DB --> ResgRepo: Resgate salvo
     deactivate DB
+
     ResgRepo --> Ctrl: Resgate
     deactivate ResgRepo
 
-    Ctrl --> Front: 201 Created
-ResgateResponse
-    deactivate Ctrl
+    Ctrl --> Front: 201 Created\nResgateResponse
     Front -> Front: Recarrega dados do aluno
-    Front --> A: Toast de sucesso
+    Front --> A: Exibe toast de sucesso
 end
 
+deactivate Ctrl
 deactivate Front
+
 @enduml
