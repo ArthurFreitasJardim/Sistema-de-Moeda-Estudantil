@@ -1,82 +1,80 @@
 @startuml
 title UC05 - Cadastrar Vantagem
 
-' Configuração visual melhorada
 hide footbox
 autoactivate off
 skinparam shadowing false
 skinparam roundcorner 12
-skinparam sequence {
-    ArrowColor #374151
-    LifeLineBorderColor #9CA3AF
-    LifeLineBackgroundColor #F9FAFB
-    ParticipantBorderColor #374151
-    ParticipantBackgroundColor #E8F5FF
-    ActorBorderColor #374151
-    ActorBackgroundColor #FFFFFF
-    DatabaseBorderColor #374151
-    DatabaseBackgroundColor #F3E8FF
-    BoxBorderColor #9CA3AF
-    BoxBackgroundColor #FAFAFA
-    GroupBorderColor #9CA3AF
-    GroupBackgroundColor #FFFFFF
-    ActivationBorderColor #111827
-    ActivationBackgroundColor #CFE3FF
-    ParticipantPadding 28
-    BoxPadding 10
-    MessageAlign center
-}
-skinparam maxMessageSize 70
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
 
 actor "Empresa Parceira" as E
-boundary "Painel da Empresa
-Next.js" as Front
-control "VantagemController
-Micronaut" as Ctrl
+boundary "Painel da Empresa\nNext.js" as Front
+control "VantagemController\nMicronaut" as Ctrl
 control "EmpresaRepository" as EmpresaRepo
 control "VantagemRepository" as VantRepo
 database "PostgreSQL" as DB
 
-E -> Front: Informa nome, descrição,
-valor e quantidade
+E -> Front: Informa nome, descricao,\nvalor e quantidade
 activate Front
+
 note right of Front
   Valida valor em moedas > 0
-  e quantidade disponível > 0.
+  e quantidade disponivel > 0.
 end note
 
-Front -> Ctrl: POST /vantagens
-CriarVantagemRequest
+Front -> Ctrl: POST /vantagens\nCriarVantagemRequest
 activate Ctrl
+
 Ctrl -> EmpresaRepo: findById(empresaId)
 activate EmpresaRepo
+
 EmpresaRepo -> DB: SELECT empresa WHERE id = ?
 activate DB
+
 DB --> EmpresaRepo: Empresa
 deactivate DB
+
 EmpresaRepo --> Ctrl: Empresa encontrada
 deactivate EmpresaRepo
 
-alt Empresa não encontrada
-    Ctrl --> Front: 400 Bad Request
-{erro}
-    deactivate Ctrl
+alt Empresa nao encontrada
+    Ctrl --> Front: 400 Bad Request\n{erro}
     Front --> E: Exibe toast de erro
-else Dados válidos
+else Dados validos
     Ctrl -> VantRepo: save(vantagem)
     activate VantRepo
+
     VantRepo -> DB: INSERT vantagem
     activate DB
+
     DB --> VantRepo: Vantagem salva
     deactivate DB
+
     VantRepo --> Ctrl: Vantagem
     deactivate VantRepo
-    Ctrl --> Front: 201 Created
-VantagemResponse
-    deactivate Ctrl
-    Front --> E: Exibe toast de sucesso
-e atualiza painel
+
+    Ctrl --> Front: 201 Created\nVantagemResponse
+    Front --> E: Exibe toast de sucesso\ne atualiza painel
 end
 
+deactivate Ctrl
 deactivate Front
+
 @enduml
