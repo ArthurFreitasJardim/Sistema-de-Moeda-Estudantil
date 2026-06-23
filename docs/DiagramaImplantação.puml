@@ -1,0 +1,69 @@
+@startuml
+title Diagrama de Implementação - Sistema de Moeda Estudantil
+
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam nodeBorderColor #374151
+skinparam nodeBackgroundColor #E8F5FF
+skinparam databaseBorderColor #374151
+skinparam databaseBackgroundColor #F3E8FF
+skinparam queueBorderColor #374151
+skinparam queueBackgroundColor #FEF3C7
+skinparam cloudBorderColor #374151
+skinparam cloudBackgroundColor #ECFEFF
+skinparam componentBorderColor #374151
+skinparam componentBackgroundColor #F0F9FF
+skinparam artifactBorderColor #374151
+skinparam artifactBackgroundColor #FFFFFF
+skinparam ArrowColor #374151
+
+node "Cliente\nNavegador Web" as cliente {
+    artifact "Interface do Usuario\nNext.js Pages" as browser
+}
+
+cloud "Vercel\nHospedagem Frontend" as vercel {
+    component "Aplicacao Next.js\nTypeScript" as next
+}
+
+cloud "Render\nHospedagem Backend" as render {
+    component "API Micronaut 4\nJava 17" as api
+    component "Controllers REST" as controllers
+    component "Servicos de Negocio" as services
+    component "Repositories\nMicronaut Data/JPA" as repositories
+    component "EmailConsumer" as emailConsumer
+}
+
+database "Render PostgreSQL\nBanco de Dados" as postgres {
+    artifact "Tabelas:\nusuario, aluno, professor,\nempresa, instituicao,\ntransacao, vantagem,\nresgate_vantagem" as tabelas
+}
+
+queue "CloudAMQP\nRabbitMQ" as rabbit {
+    artifact "Exchange:\nmoedas.exchange" as exchange
+    artifact "Fila:\nmoedas.email" as filaMoedas
+    artifact "Fila:\nmoedas.cupom.email" as filaCupom
+}
+
+cloud "Gmail SMTP\nServidor de E-mail" as gmail {
+    artifact "Envio de e-mails\ncom confirmacoes e QR Code" as emails
+}
+
+cliente --> vercel : Acessa sistema via HTTPS
+browser --> next : Renderizacao das telas
+
+next --> api : Chamadas HTTP/REST\nNEXT_PUBLIC_API_URL
+
+api --> controllers : Recebe requisicoes
+controllers --> services : Executa regras de negocio
+services --> repositories : Solicita persistencia
+repositories --> postgres : JDBC / Hibernate
+postgres --> repositories : Dados persistidos
+
+api --> rabbit : Publica eventos\nRabbitMQ AMQP
+rabbit --> emailConsumer : Entrega mensagens\nassincronas
+emailConsumer --> postgres : Busca dados da transacao\nou do resgate
+emailConsumer --> gmail : Envia e-mails via SMTP
+gmail --> cliente : Usuario recebe e-mail\ncom notificacao ou cupom
+
+@enduml
