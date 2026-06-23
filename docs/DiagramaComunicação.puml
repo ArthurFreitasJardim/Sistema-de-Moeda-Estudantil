@@ -1,0 +1,47 @@
+@startuml
+title Diagrama de Comunicação - Sistema de Moeda Estudantil
+
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam objectBorderColor #374151
+skinparam objectBackgroundColor #E8F5FF
+skinparam databaseBorderColor #374151
+skinparam databaseBackgroundColor #F3E8FF
+skinparam queueBorderColor #374151
+skinparam queueBackgroundColor #FEF3C7
+skinparam cloudBorderColor #374151
+skinparam cloudBackgroundColor #ECFEFF
+skinparam actorBorderColor #374151
+skinparam actorBackgroundColor #FFFFFF
+skinparam ArrowColor #374151
+
+actor Aluno as aluno
+actor Professor as professor
+actor "Empresa Parceira" as empresa
+
+object "Frontend\nNext.js" as frontend
+object "API Backend\nMicronaut" as backend
+database "PostgreSQL\nBanco de Dados" as banco
+queue "RabbitMQ\nMensageria" as rabbit
+object "EmailConsumer\nProcessador Assincrono" as consumer
+cloud "Gmail SMTP\nServidor de E-mail" as gmail
+
+aluno --> frontend : 1. acessa painel,\nconsulta saldo e resgata vantagens
+professor --> frontend : 2. envia moedas\npor merito
+empresa --> frontend : 3. cadastra vantagens\ne controla beneficios
+
+frontend --> backend : 4. requisicoes HTTP\nREST API
+backend --> banco : 5. consulta e persiste\nusuarios, saldos, transacoes,\nvantagens e resgates
+banco --> backend : 6. retorna dados\natualizados
+
+backend --> rabbit : 7. publica eventos\nEnvioMoedasEvent\nCupomResgatadoEvent
+rabbit --> consumer : 8. entrega mensagens\npara processamento
+consumer --> banco : 9. busca dados completos\nda transacao ou resgate
+consumer --> gmail : 10. envia e-mails\nde confirmacao e cupom
+gmail --> aluno : 11. e-mail com aviso\nou QR Code do cupom
+gmail --> professor : 12. confirmacao\nde envio de moedas
+gmail --> empresa : 13. notificacao\nquando necessario
+
+@enduml
