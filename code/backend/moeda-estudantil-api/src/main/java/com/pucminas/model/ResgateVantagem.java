@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Serdeable
 @Entity
+@Table(name = "resgate_vantagem")
 public class ResgateVantagem {
 
     @Id
@@ -22,8 +23,22 @@ public class ResgateVantagem {
     @Column(nullable = false)
     private Integer valorMoedas;
 
+    @Column(nullable = false, unique = true)
+    private String codigoCupom;
+
     @Column(nullable = false)
     private LocalDateTime dataHora = LocalDateTime.now();
+
+    public ResgateVantagem() {
+    }
+
+    public ResgateVantagem(Aluno aluno, Vantagem vantagem, Integer valorMoedas, String codigoCupom) {
+        this.aluno = aluno;
+        this.vantagem = vantagem;
+        this.valorMoedas = valorMoedas;
+        this.codigoCupom = codigoCupom;
+        this.dataHora = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
@@ -33,32 +48,36 @@ public class ResgateVantagem {
         return aluno;
     }
 
-    public Vantagem getVantagem() {
-        return vantagem;
-    }
-
-    public Integer getValorMoedas() {
-        return valorMoedas;
-    }
-
-    public LocalDateTime getDataHora() {
-        return dataHora;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public void setAluno(Aluno aluno) {
         this.aluno = aluno;
+    }
+
+    public Vantagem getVantagem() {
+        return vantagem;
     }
 
     public void setVantagem(Vantagem vantagem) {
         this.vantagem = vantagem;
     }
 
+    public Integer getValorMoedas() {
+        return valorMoedas;
+    }
+
     public void setValorMoedas(Integer valorMoedas) {
         this.valorMoedas = valorMoedas;
+    }
+
+    public String getCodigoCupom() {
+        return codigoCupom;
+    }
+
+    public void setCodigoCupom(String codigoCupom) {
+        this.codigoCupom = codigoCupom;
+    }
+
+    public LocalDateTime getDataHora() {
+        return dataHora;
     }
 
     public void setDataHora(LocalDateTime dataHora) {

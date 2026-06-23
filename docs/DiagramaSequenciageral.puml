@@ -1,0 +1,428 @@
+@startuml
+title Diagrama de Sequencia Geral - Sistema de Moeda Estudantil
+
+hide footbox
+autoactivate off
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam sequenceArrowColor #374151
+skinparam sequenceLifeLineBorderColor #9CA3AF
+skinparam sequenceLifeLineBackgroundColor #F9FAFB
+skinparam sequenceParticipantBorderColor #374151
+skinparam sequenceParticipantBackgroundColor #E8F5FF
+skinparam sequenceActorBorderColor #374151
+skinparam sequenceActorBackgroundColor #FFFFFF
+skinparam sequenceDatabaseBorderColor #374151
+skinparam sequenceDatabaseBackgroundColor #F3E8FF
+skinparam sequenceBoundaryBorderColor #374151
+skinparam sequenceBoundaryBackgroundColor #ECFEFF
+skinparam sequenceControlBorderColor #374151
+skinparam sequenceControlBackgroundColor #F0F9FF
+skinparam sequenceActivationBorderColor #111827
+skinparam sequenceActivationBackgroundColor #CFE3FF
+skinparam ParticipantPadding 35
+skinparam BoxPadding 12
+skinparam maxMessageSize 90
+
+actor Aluno as Aluno
+actor Professor as Professor
+actor "Empresa Parceira" as Empresa
+boundary "Frontend\nNext.js" as Front
+control "Controllers\nMicronaut" as Controllers
+control "Repositories\nMicronaut Data" as Repos
+queue "RabbitMQ\nmoedas.email" as MQ
+control "EmailConsumer" as Consumer
+control "EmailService" as EmailService
+database "PostgreSQL" as DB
+collections "Gmail SMTP" as SMTP
+
+group Cadastro de aluno
+    Aluno -> Front: Preenche cadastro de aluno
+    activate Front
+
+    Front -> Controllers: POST /alunos\nAlunoRequest
+    activate Controllers
+
+    Controllers -> Repos: Busca ou cria instituicao
+    activate Repos
+
+    Repos -> DB: SELECT/INSERT instituicao
+    activate DB
+
+    DB --> Repos: Instituicao
+    deactivate DB
+
+    Repos --> Controllers: Instituicao associada
+    deactivate Repos
+
+    Controllers -> Repos: save(aluno)
+    activate Repos
+
+    Repos -> DB: INSERT usuario/aluno
+    activate DB
+
+    DB --> Repos: Aluno salvo
+    deactivate DB
+
+    Repos --> Controllers: Aluno
+    deactivate Repos
+
+    Controllers --> Front: 201 Created\nAlunoResponse
+    deactivate Controllers
+
+    Front --> Aluno: Exibe toast de sucesso
+    deactivate Front
+end
+
+group Cadastro de empresa parceira
+    Empresa -> Front: Preenche cadastro de empresa
+    activate Front
+
+    Front -> Controllers: POST /empresas\nEmpresaRequest
+    activate Controllers
+
+    Controllers -> Repos: save(empresa)
+    activate Repos
+
+    Repos -> DB: INSERT usuario/empresa
+    activate DB
+
+    DB --> Repos: Empresa salva
+    deactivate DB
+
+    Repos --> Controllers: Empresa
+    deactivate Repos
+
+    Controllers --> Front: 201 Created\nEmpresaResponse
+    deactivate Controllers
+
+    Front --> Empresa: Exibe toast de sucesso
+    deactivate Front
+end
+
+group Cadastro de vantagem
+    Empresa -> Front: Acessa painel da empresa
+    activate Front
+
+    Front -> Controllers: GET /vantagens/empresa/{empresaId}
+    activate Controllers
+
+    Controllers -> Repos: findByEmpresaId(empresaId)
+    activate Repos
+
+    Repos -> DB: SELECT vantagens da empresa
+    activate DB
+
+    DB --> Repos: Lista de vantagens
+    deactivate DB
+
+    Repos --> Controllers: Vantagens
+    deactivate Repos
+
+    Controllers --> Front: VantagemResponse[]
+    deactivate Controllers
+
+    Empresa -> Front: Informa nome, descricao, valor e quantidade
+
+    Front -> Controllers: POST /vantagens\nCriarVantagemRequest
+    activate Controllers
+
+    Controllers -> Repos: findById(empresaId)
+    activate Repos
+
+    Repos -> DB: SELECT empresa
+    activate DB
+
+    DB --> Repos: Empresa
+    deactivate DB
+
+    Repos --> Controllers: Empresa
+    deactivate Repos
+
+    Controllers -> Repos: save(vantagem)
+    activate Repos
+
+    Repos -> DB: INSERT vantagem
+    activate DB
+
+    DB --> Repos: Vantagem salva
+    deactivate DB
+
+    Repos --> Controllers: Vantagem
+    deactivate Repos
+
+    Controllers --> Front: 201 Created\nVantagemResponse
+    deactivate Controllers
+
+    Front --> Empresa: Atualiza painel de vantagens
+    deactivate Front
+end
+
+group Envio de moedas por merito
+    Professor -> Front: Seleciona aluno, valor e motivo
+    activate Front
+
+    Front -> Controllers: POST /transacoes\nCriarTransacaoRequest
+    activate Controllers
+
+    Controllers -> Repos: findById(professor)
+    activate Repos
+
+    Repos -> DB: SELECT professor
+    activate DB
+
+    DB --> Repos: Professor
+    deactivate DB
+
+    Repos --> Controllers: Professor
+    deactivate Repos
+
+    Controllers -> Repos: findById(aluno)
+    activate Repos
+
+    Repos -> DB: SELECT aluno
+    activate DB
+
+    DB --> Repos: Aluno
+    deactivate DB
+
+    Repos --> Controllers: Aluno
+    deactivate Repos
+
+    Controllers -> Controllers: Valida saldo, curso, instituicao e motivo
+
+    Controllers -> Repos: update(professor)
+    activate Repos
+
+    Repos -> DB: UPDATE saldo_corrente
+    activate DB
+
+    DB --> Repos: OK
+    deactivate DB
+
+    Repos --> Controllers: Professor atualizado
+    deactivate Repos
+
+    Controllers -> Repos: update(aluno)
+    activate Repos
+
+    Repos -> DB: UPDATE saldo_atual
+    activate DB
+
+    DB --> Repos: OK
+    deactivate DB
+
+    Repos --> Controllers: Aluno atualizado
+    deactivate Repos
+
+    Controllers -> Repos: save(transacao)
+    activate Repos
+
+    Repos -> DB: INSERT transacao
+    activate DB
+
+    DB --> Repos: Transacao salva
+    deactivate DB
+
+    Repos --> Controllers: Transacao
+    deactivate Repos
+
+    Controllers -> MQ: Publica EnvioMoedasEvent
+    activate MQ
+
+    MQ --> Controllers: Mensagem aceita
+    deactivate MQ
+
+    Controllers --> Front: 201 Created\nStatusResponse
+    deactivate Controllers
+
+    Front --> Professor: Exibe toast de sucesso
+    deactivate Front
+end
+
+group Notificacao por e-mail do envio de moedas
+    MQ -> Consumer: Entrega EnvioMoedasEvent
+    activate Consumer
+
+    Consumer -> Repos: Busca transacao, professor e aluno
+    activate Repos
+
+    Repos -> DB: SELECT transacao/professor/aluno
+    activate DB
+
+    DB --> Repos: Dados completos
+    deactivate DB
+
+    Repos --> Consumer: Dados encontrados
+    deactivate Repos
+
+    Consumer -> EmailService: Envia e-mails de confirmacao
+    activate EmailService
+
+    EmailService -> SMTP: E-mail para professor
+    activate SMTP
+
+    SMTP --> EmailService: OK
+    deactivate SMTP
+
+    EmailService -> SMTP: E-mail para aluno
+    activate SMTP
+
+    SMTP --> EmailService: OK
+    deactivate SMTP
+
+    EmailService --> Consumer: E-mails enviados
+    deactivate EmailService
+
+    Consumer --> MQ: ACK da mensagem
+    deactivate Consumer
+
+    SMTP --> Professor: Recebe confirmacao do envio
+    SMTP --> Aluno: Recebe aviso de moedas
+end
+
+group Consulta de perfil, saldo e extrato do aluno
+    Aluno -> Front: Acessa perfil do aluno
+    activate Front
+
+    Front -> Controllers: GET /alunos/{id}
+    activate Controllers
+
+    Controllers -> Repos: findById(alunoId)
+    activate Repos
+
+    Repos -> DB: SELECT aluno
+    activate DB
+
+    DB --> Repos: Aluno
+    deactivate DB
+
+    Repos --> Controllers: Aluno
+    deactivate Repos
+
+    Controllers --> Front: AlunoResponse
+    deactivate Controllers
+
+    Front -> Controllers: GET /transacoes/aluno/{id}
+    activate Controllers
+
+    Controllers -> Repos: findByDestinatarioId(alunoId)
+    activate Repos
+
+    Repos -> DB: SELECT transacoes recebidas
+    activate DB
+
+    DB --> Repos: Extrato
+    deactivate DB
+
+    Repos --> Controllers: Lista de transacoes
+    deactivate Repos
+
+    Controllers --> Front: ExtratoResponse[]
+    deactivate Controllers
+
+    Front -> Controllers: GET /resgates/aluno/{id}
+    activate Controllers
+
+    Controllers -> Repos: findByAlunoId(alunoId)
+    activate Repos
+
+    Repos -> DB: SELECT resgates
+    activate DB
+
+    DB --> Repos: Resgates
+    deactivate DB
+
+    Repos --> Controllers: Lista de resgates
+    deactivate Repos
+
+    Controllers --> Front: ResgateResponse[]
+    deactivate Controllers
+
+    Front --> Aluno: Exibe saldo, extrato, vantagens e resgates
+    deactivate Front
+end
+
+group Resgate de vantagem
+    Aluno -> Front: Clica em resgatar vantagem
+    activate Front
+
+    Front -> Controllers: POST /resgates\n{alunoId, vantagemId}
+    activate Controllers
+
+    Controllers -> Repos: Busca aluno e vantagem
+    activate Repos
+
+    Repos -> DB: SELECT aluno e vantagem
+    activate DB
+
+    DB --> Repos: Aluno e vantagem
+    deactivate DB
+
+    Repos --> Controllers: Dados encontrados
+    deactivate Repos
+
+    Controllers -> Repos: existsByAlunoIdAndVantagemId(alunoId, vantagemId)
+    activate Repos
+
+    Repos -> DB: SELECT EXISTS resgate
+    activate DB
+
+    DB --> Repos: true/false
+    deactivate DB
+
+    Repos --> Controllers: Resultado
+    deactivate Repos
+
+    alt Resgate invalido
+        Controllers --> Front: 400 Bad Request\n{erro}
+        Front --> Aluno: Exibe toast de erro
+    else Resgate valido
+        Controllers -> Controllers: Valida saldo e estoque
+
+        Controllers -> Repos: update(aluno)
+        activate Repos
+
+        Repos -> DB: UPDATE saldo_atual
+        activate DB
+
+        DB --> Repos: OK
+        deactivate DB
+
+        Repos --> Controllers: Aluno atualizado
+        deactivate Repos
+
+        Controllers -> Repos: update(vantagem)
+        activate Repos
+
+        Repos -> DB: UPDATE quantidade_disponivel
+        activate DB
+
+        DB --> Repos: OK
+        deactivate DB
+
+        Repos --> Controllers: Vantagem atualizada
+        deactivate Repos
+
+        Controllers -> Repos: save(resgate)
+        activate Repos
+
+        Repos -> DB: INSERT resgate_vantagem
+        activate DB
+
+        DB --> Repos: Resgate salvo
+        deactivate DB
+
+        Repos --> Controllers: Resgate
+        deactivate Repos
+
+        Controllers --> Front: 201 Created\nResgateResponse
+        Front -> Front: Recarrega dados do aluno
+        Front --> Aluno: Exibe toast de sucesso
+    end
+
+    deactivate Controllers
+    deactivate Front
+end
+
+@enduml

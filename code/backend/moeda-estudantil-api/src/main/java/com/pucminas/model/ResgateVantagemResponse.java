@@ -1,4 +1,4 @@
-package com.pucminas.dto;
+package com.pucminas.model;
 
 import io.micronaut.serde.annotation.Serdeable;
 

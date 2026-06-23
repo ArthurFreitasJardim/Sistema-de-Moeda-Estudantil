@@ -12,6 +12,11 @@ repositories {
 }
 
 dependencies {
+    implementation("com.google.zxing:core:3.5.3")
+    implementation("com.google.zxing:javase:3.5.3")
+    
+    implementation("org.mindrot:jbcrypt:0.4")
+    
     implementation("io.micronaut.rabbitmq:micronaut-rabbitmq:4.8.0")
     implementation("org.eclipse.angus:jakarta.mail:2.0.3")
 

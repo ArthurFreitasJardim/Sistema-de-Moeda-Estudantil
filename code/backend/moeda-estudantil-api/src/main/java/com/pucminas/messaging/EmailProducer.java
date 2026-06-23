@@ -8,4 +8,7 @@ public interface EmailProducer {
 
     @Binding("moedas.email")
     void publicarEnvioMoedas(EnvioMoedasEvent evento);
+
+    @Binding("moedas.cupom.email")
+    void publicarCupomResgatado(CupomResgatadoEvent evento);
 }
