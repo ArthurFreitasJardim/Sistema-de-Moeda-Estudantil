@@ -27,6 +27,8 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
 
+import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -99,7 +101,7 @@ public class EmailConsumer {
             Aluno aluno = alunoOpt.get();
 
             enviarConfirmacaoEnvioParaProfessor(professor, aluno, transacao);
-            enviarConfirmacaoRecebimentoParaAluno(aluno, professor, transacao);
+            enviarConfirmacaoRecebimentoParaAluno(professor, aluno, transacao);
 
             System.out.println("E-mails de envio de moedas enviados com sucesso.");
         } catch (Exception e) {
@@ -175,51 +177,317 @@ public class EmailConsumer {
     }
 
     private void enviarConfirmacaoEnvioParaProfessor(Professor professor, Aluno aluno, Transacao transacao) {
+        if (professor.getEmail() == null || professor.getEmail().isBlank()) {
+            System.out.println("Professor sem e-mail cadastrado. E-mail nao enviado.");
+            return;
+        }
+
         String assunto = "Confirmacao de envio de moedas";
 
-        String corpo = """
-                Ola, %s.
+        String dataFormatada = transacao.getDataHora() != null
+                ? transacao.getDataHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                : "Data nao informada";
 
-                O envio de moedas foi realizado com sucesso.
+        String html = """
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            background-color: #f1f5f9;
+                            font-family: Arial, Helvetica, sans-serif;
+                            color: #1e293b;
+                        }
+                        .container {
+                            max-width: 620px;
+                            margin: 32px auto;
+                            background-color: #ffffff;
+                            border-radius: 18px;
+                            overflow: hidden;
+                            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #2563eb, #10b981);
+                            padding: 32px 28px;
+                            color: #ffffff;
+                            text-align: center;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 26px;
+                            font-weight: 800;
+                        }
+                        .header p {
+                            margin: 8px 0 0;
+                            font-size: 14px;
+                            opacity: 0.95;
+                        }
+                        .content {
+                            padding: 32px 28px;
+                        }
+                        .hello {
+                            font-size: 18px;
+                            margin-bottom: 18px;
+                        }
+                        .card {
+                            background-color: #f8fafc;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 16px;
+                            padding: 22px;
+                            margin: 24px 0;
+                        }
+                        .amount {
+                            font-size: 36px;
+                            font-weight: 900;
+                            color: #2563eb;
+                            margin: 0;
+                        }
+                        .label {
+                            font-size: 12px;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                            color: #64748b;
+                            font-weight: 700;
+                            margin-bottom: 6px;
+                        }
+                        .info {
+                            margin: 14px 0;
+                            font-size: 15px;
+                            line-height: 1.5;
+                        }
+                        .reason {
+                            background-color: #ffffff;
+                            border-left: 4px solid #2563eb;
+                            padding: 14px 16px;
+                            border-radius: 10px;
+                            margin-top: 10px;
+                            color: #334155;
+                        }
+                        .footer {
+                            padding: 20px 28px;
+                            background-color: #f8fafc;
+                            text-align: center;
+                            color: #64748b;
+                            font-size: 12px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>Sistema de Moeda Estudantil</h1>
+                            <p>Confirmacao de envio de moedas</p>
+                        </div>
 
-                Aluno: %s
-                Valor enviado: %d moedas
-                Motivo: %s
+                        <div class="content">
+                            <p class="hello">Ola, Professor <strong>%s</strong>.</p>
 
-                Sistema de Moeda Estudantil
+                            <p class="info">
+                                Confirmamos que o envio de moedas foi realizado com sucesso.
+                            </p>
+
+                            <div class="card">
+                                <div class="label">Quantidade enviada</div>
+                                <p class="amount">%d moedas</p>
+
+                                <p class="info">
+                                    <strong>Aluno destinatario:</strong> %s
+                                </p>
+
+                                <p class="info">
+                                    <strong>Data da transacao:</strong> %s
+                                </p>
+
+                                <div class="label">Motivo informado</div>
+                                <div class="reason">
+                                    %s
+                                </div>
+                            </div>
+
+                            <p class="info">
+                                O saldo do professor foi atualizado automaticamente no sistema.
+                            </p>
+                        </div>
+
+                        <div class="footer">
+                            Esta e uma mensagem automatica do Sistema de Moeda Estudantil.
+                        </div>
+                    </div>
+                </body>
+                </html>
                 """.formatted(
-                professor.getNome(),
-                aluno.getNome(),
+                escapeHtml(professor.getNome()),
                 transacao.getValor(),
-                transacao.getMotivo()
+                escapeHtml(aluno.getNome()),
+                dataFormatada,
+                escapeHtml(transacao.getMotivo())
         );
 
-        enviarEmailTexto(professor.getEmail(), assunto, corpo);
+        enviarEmailHtml(professor.getEmail(), assunto, html);
     }
 
-    private void enviarConfirmacaoRecebimentoParaAluno(Aluno aluno, Professor professor, Transacao transacao) {
-        String assunto = "Voce recebeu moedas estudantis";
+    private void enviarConfirmacaoRecebimentoParaAluno(Professor professor, Aluno aluno, Transacao transacao) {
+        if (aluno.getEmail() == null || aluno.getEmail().isBlank()) {
+            System.out.println("Aluno sem e-mail cadastrado. E-mail nao enviado.");
+            return;
+        }
 
-        String corpo = """
-                Ola, %s.
+        String assunto = "Voce recebeu moedas!";
 
-                Voce recebeu moedas estudantis.
+        String dataFormatada = transacao.getDataHora() != null
+                ? transacao.getDataHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                : "Data nao informada";
 
-                Professor: %s
-                Valor recebido: %d moedas
-                Motivo: %s
+        String html = """
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            background-color: #f1f5f9;
+                            font-family: Arial, Helvetica, sans-serif;
+                            color: #1e293b;
+                        }
+                        .container {
+                            max-width: 620px;
+                            margin: 32px auto;
+                            background-color: #ffffff;
+                            border-radius: 18px;
+                            overflow: hidden;
+                            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #10b981, #2563eb);
+                            padding: 32px 28px;
+                            color: #ffffff;
+                            text-align: center;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 26px;
+                            font-weight: 800;
+                        }
+                        .header p {
+                            margin: 8px 0 0;
+                            font-size: 14px;
+                            opacity: 0.95;
+                        }
+                        .content {
+                            padding: 32px 28px;
+                        }
+                        .hello {
+                            font-size: 18px;
+                            margin-bottom: 18px;
+                        }
+                        .card {
+                            background-color: #f8fafc;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 16px;
+                            padding: 22px;
+                            margin: 24px 0;
+                        }
+                        .amount {
+                            font-size: 38px;
+                            font-weight: 900;
+                            color: #10b981;
+                            margin: 0;
+                        }
+                        .balance {
+                            font-size: 24px;
+                            font-weight: 800;
+                            color: #2563eb;
+                            margin: 4px 0 0;
+                        }
+                        .label {
+                            font-size: 12px;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                            color: #64748b;
+                            font-weight: 700;
+                            margin-bottom: 6px;
+                        }
+                        .info {
+                            margin: 14px 0;
+                            font-size: 15px;
+                            line-height: 1.5;
+                        }
+                        .reason {
+                            background-color: #ffffff;
+                            border-left: 4px solid #10b981;
+                            padding: 14px 16px;
+                            border-radius: 10px;
+                            margin-top: 10px;
+                            color: #334155;
+                        }
+                        .footer {
+                            padding: 20px 28px;
+                            background-color: #f8fafc;
+                            text-align: center;
+                            color: #64748b;
+                            font-size: 12px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>Voce recebeu moedas!</h1>
+                            <p>Sistema de Moeda Estudantil</p>
+                        </div>
 
-                Acesse seu painel para consultar o saldo e o extrato.
+                        <div class="content">
+                            <p class="hello">Ola, <strong>%s</strong>.</p>
 
-                Sistema de Moeda Estudantil
+                            <p class="info">
+                                Voce recebeu uma nova recompensa academica.
+                            </p>
+
+                            <div class="card">
+                                <div class="label">Quantidade recebida</div>
+                                <p class="amount">+%d moedas</p>
+
+                                <p class="info">
+                                    <strong>Professor:</strong> %s
+                                </p>
+
+                                <p class="info">
+                                    <strong>Data da transacao:</strong> %s
+                                </p>
+
+                                <div class="label">Motivo</div>
+                                <div class="reason">
+                                    %s
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="label">Seu novo saldo</div>
+                                <p class="balance">%d moedas</p>
+                            </div>
+                        </div>
+
+                        <div class="footer">
+                            Esta e uma mensagem automatica do Sistema de Moeda Estudantil.
+                        </div>
+                    </div>
+                </body>
+                </html>
                 """.formatted(
-                aluno.getNome(),
-                professor.getNome(),
+                escapeHtml(aluno.getNome()),
                 transacao.getValor(),
-                transacao.getMotivo()
+                escapeHtml(professor.getNome()),
+                dataFormatada,
+                escapeHtml(transacao.getMotivo()),
+                aluno.getSaldoAtual()
         );
 
-        enviarEmailTexto(aluno.getEmail(), assunto, corpo);
+        enviarEmailHtml(aluno.getEmail(), assunto, html);
     }
 
     private void enviarCupomResgateParaAluno(
@@ -228,53 +496,165 @@ public class EmailConsumer {
             Empresa empresa,
             ResgateVantagem resgate
     ) {
+        if (aluno.getEmail() == null || aluno.getEmail().isBlank()) {
+            System.out.println("Aluno sem e-mail cadastrado. Cupom nao enviado.");
+            return;
+        }
+
         String assunto = "Cupom de resgate - " + vantagem.getNome();
 
         String conteudoQrCode = gerarTextoDoQrCode(aluno, vantagem, empresa, resgate);
         byte[] qrCodeBytes = cupomService.gerarQrCodePng(conteudoQrCode);
 
+        String descricao = vantagem.getDescricao() != null && !vantagem.getDescricao().isBlank()
+                ? vantagem.getDescricao()
+                : "Descricao nao informada";
+
         String corpoHtml = """
-                <html>
-                    <body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 24px;">
-                        <div style="max-width: 620px; margin: auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #dddddd;">
-                            <h2 style="color: #111827; margin-top: 0;">Cupom de Resgate</h2>
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            background-color: #f1f5f9;
+                            font-family: Arial, Helvetica, sans-serif;
+                            color: #1e293b;
+                        }
+                        .container {
+                            max-width: 620px;
+                            margin: 32px auto;
+                            background-color: #ffffff;
+                            border-radius: 18px;
+                            overflow: hidden;
+                            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #111827, #10b981);
+                            padding: 32px 28px;
+                            color: #ffffff;
+                            text-align: center;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 26px;
+                            font-weight: 800;
+                        }
+                        .header p {
+                            margin: 8px 0 0;
+                            font-size: 14px;
+                            opacity: 0.95;
+                        }
+                        .content {
+                            padding: 32px 28px;
+                        }
+                        .hello {
+                            font-size: 18px;
+                            margin-bottom: 18px;
+                        }
+                        .card {
+                            background-color: #f8fafc;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 16px;
+                            padding: 22px;
+                            margin: 24px 0;
+                        }
+                        .label {
+                            font-size: 12px;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                            color: #64748b;
+                            font-weight: 700;
+                            margin-bottom: 6px;
+                        }
+                        .info {
+                            margin: 14px 0;
+                            font-size: 15px;
+                            line-height: 1.5;
+                        }
+                        .codigo {
+                            font-size: 17px;
+                            font-weight: 900;
+                            color: #111827;
+                            word-break: break-all;
+                            background-color: #ffffff;
+                            border-left: 4px solid #10b981;
+                            padding: 14px 16px;
+                            border-radius: 10px;
+                        }
+                        .qr {
+                            text-align: center;
+                            margin: 24px 0;
+                        }
+                        .qr img {
+                            width: 220px;
+                            height: 220px;
+                        }
+                        .footer {
+                            padding: 20px 28px;
+                            background-color: #f8fafc;
+                            text-align: center;
+                            color: #64748b;
+                            font-size: 12px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>Cupom de Resgate</h1>
+                            <p>Sistema de Moeda Estudantil</p>
+                        </div>
 
-                            <p>Ola, <strong>%s</strong>.</p>
+                        <div class="content">
+                            <p class="hello">Ola, <strong>%s</strong>.</p>
 
-                            <p>Seu resgate foi realizado com sucesso. Apresente este cupom para utilizar sua vantagem.</p>
+                            <p class="info">
+                                Seu resgate foi realizado com sucesso. Apresente este cupom para utilizar sua vantagem.
+                            </p>
 
-                            <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
-                                <p><strong>Vantagem:</strong> %s</p>
-                                <p><strong>Descricao:</strong> %s</p>
-                                <p><strong>Empresa:</strong> %s</p>
-                                <p><strong>Valor:</strong> %d moedas</p>
-                                <p><strong>Codigo do cupom:</strong></p>
-                                <p style="font-size: 18px; font-weight: bold; color: #111827; word-break: break-all;">%s</p>
+                            <div class="card">
+                                <div class="label">Vantagem</div>
+                                <p class="info"><strong>%s</strong></p>
+
+                                <div class="label">Descricao</div>
+                                <p class="info">%s</p>
+
+                                <div class="label">Empresa</div>
+                                <p class="info">%s</p>
+
+                                <div class="label">Valor</div>
+                                <p class="info"><strong>%d moedas</strong></p>
+
+                                <div class="label">Codigo do cupom</div>
+                                <div class="codigo">%s</div>
                             </div>
 
-                            <p style="text-align: center;"><strong>QR Code do cupom</strong></p>
-
-                            <div style="text-align: center; margin: 24px 0;">
-                                <img src="cid:qrcodecupom" alt="QR Code do Cupom" style="width: 220px; height: 220px;" />
+                            <div class="qr">
+                                <p><strong>QR Code do cupom</strong></p>
+                                <img src="cid:qrcodecupom" alt="QR Code do Cupom" />
                             </div>
 
-                            <p style="font-size: 13px; color: #6b7280;">
+                            <p class="info">
                                 Ao escanear o QR Code, serao exibidas as informacoes principais do cupom.
                             </p>
-
-                            <p style="font-size: 13px; color: #6b7280;">
-                                Este cupom foi gerado automaticamente pelo Sistema de Moeda Estudantil.
-                            </p>
                         </div>
-                    </body>
+
+                        <div class="footer">
+                            Esta e uma mensagem automatica do Sistema de Moeda Estudantil.
+                        </div>
+                    </div>
+                </body>
                 </html>
                 """.formatted(
-                aluno.getNome(),
-                vantagem.getNome(),
-                vantagem.getDescricao(),
-                empresa.getNome(),
+                escapeHtml(aluno.getNome()),
+                escapeHtml(vantagem.getNome()),
+                escapeHtml(descricao),
+                escapeHtml(empresa.getNome()),
                 resgate.getValorMoedas(),
-                resgate.getCodigoCupom()
+                escapeHtml(resgate.getCodigoCupom())
         );
 
         enviarEmailHtmlComQrCode(aluno.getEmail(), assunto, corpoHtml, qrCodeBytes);
@@ -308,13 +688,17 @@ public class EmailConsumer {
         );
     }
 
-    private void enviarEmailTexto(String destinatario, String assunto, String corpo) {
+    private void enviarEmailHtml(String destinatario, String assunto, String html) {
         try {
-            Message message = criarMensagem(destinatario, assunto);
-            message.setText(corpo);
+            MimeMessage message = criarMensagem(destinatario, assunto);
+            message.setContent(html, "text/html; charset=UTF-8");
+
             Transport.send(message);
+
+            System.out.println("E-mail enviado com sucesso para: " + destinatario);
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao enviar e-mail de texto.", e);
+            System.out.println("Erro ao enviar e-mail para " + destinatario + ": " + e.getMessage());
+            throw new RuntimeException("Erro ao enviar e-mail HTML.", e);
         }
     }
 
@@ -330,7 +714,7 @@ public class EmailConsumer {
             MimeMultipart multipart = new MimeMultipart("related");
 
             MimeBodyPart htmlPart = new MimeBodyPart();
-            htmlPart.setContent(corpoHtml, "text/html; charset=utf-8");
+            htmlPart.setContent(corpoHtml, "text/html; charset=UTF-8");
             multipart.addBodyPart(htmlPart);
 
             MimeBodyPart qrCodePart = new MimeBodyPart();
@@ -344,7 +728,10 @@ public class EmailConsumer {
             message.setContent(multipart);
 
             Transport.send(message);
+
+            System.out.println("E-mail com QR Code enviado com sucesso para: " + destinatario);
         } catch (Exception e) {
+            System.out.println("Erro ao enviar e-mail com QR Code para " + destinatario + ": " + e.getMessage());
             throw new RuntimeException("Erro ao enviar e-mail HTML com QR Code.", e);
         }
     }
@@ -355,6 +742,7 @@ public class EmailConsumer {
         props.put("mail.smtp.port", port);
         props.put("mail.smtp.auth", auth);
         props.put("mail.smtp.starttls.enable", starttls);
+        props.put("mail.smtp.ssl.trust", host);
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
@@ -364,10 +752,27 @@ public class EmailConsumer {
         });
 
         MimeMessage message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(from));
+        message.setFrom(new InternetAddress(
+                from,
+                "Sistema de Moeda Estudantil",
+                StandardCharsets.UTF_8.name()
+        ));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
-        message.setSubject(assunto, "UTF-8");
+        message.setSubject(assunto, StandardCharsets.UTF_8.name());
 
         return message;
+    }
+
+    private String escapeHtml(String texto) {
+        if (texto == null) {
+            return "";
+        }
+
+        return texto
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }
