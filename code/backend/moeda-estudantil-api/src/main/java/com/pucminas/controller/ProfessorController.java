@@ -5,6 +5,7 @@ import com.pucminas.model.Professor;
 import com.pucminas.model.SenhaService;
 import com.pucminas.repository.InstituicaoRepository;
 import com.pucminas.repository.ProfessorRepository;
+import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
@@ -79,7 +80,15 @@ public class ProfessorController {
                 return HttpResponse.badRequest(new ErroApiResponse("Já existe um professor com este e-mail."));
             }
 
-            Instituicao instituicao = buscarOuCriarInstituicao(request.instituicaoNome());
+            String nomeInstituicao = null;
+
+            if (request.instituicaoNome() != null && !request.instituicaoNome().isBlank()) {
+                nomeInstituicao = request.instituicaoNome();
+            } else if (request.instituicao() != null && !request.instituicao().isBlank()) {
+                nomeInstituicao = request.instituicao();
+            }
+
+            Instituicao instituicao = buscarOuCriarInstituicao(nomeInstituicao);
 
             Professor professor = new Professor();
             professor.setNome(request.nome().trim());
@@ -152,16 +161,19 @@ public class ProfessorController {
         );
     }
 
+    @Introspected
     public record CriarProfessorRequest(
             String nome,
             String email,
             String senha,
             String cpf,
             String departamento,
-            String instituicaoNome
+            String instituicaoNome,
+            String instituicao
     ) {
     }
 
+    @Introspected
     public record ProfessorApiResponse(
             Long id,
             String nome,
@@ -173,11 +185,13 @@ public class ProfessorController {
     ) {
     }
 
+    @Introspected
     public record ErroApiResponse(
             String erro
     ) {
     }
 
+    @Introspected
     public record MensagemApiResponse(
             String mensagem
     ) {
