@@ -5,10 +5,10 @@ import com.pucminas.model.Professor;
 import com.pucminas.model.SenhaService;
 import com.pucminas.repository.InstituicaoRepository;
 import com.pucminas.repository.ProfessorRepository;
-import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
+import io.micronaut.serde.annotation.Serdeable;
 
 import java.util.List;
 import java.util.Optional;
@@ -104,6 +104,7 @@ public class ProfessorController {
             return HttpResponse.created(toResponse(professorSalvo));
         } catch (Exception exception) {
             exception.printStackTrace();
+
             return HttpResponse.serverError(
                     new ErroApiResponse("Erro ao cadastrar professor: " + exception.getMessage())
             );
@@ -161,7 +162,7 @@ public class ProfessorController {
         );
     }
 
-    @Introspected
+    @Serdeable.Deserializable
     public record CriarProfessorRequest(
             String nome,
             String email,
@@ -173,7 +174,7 @@ public class ProfessorController {
     ) {
     }
 
-    @Introspected
+    @Serdeable.Serializable
     public record ProfessorApiResponse(
             Long id,
             String nome,
@@ -185,13 +186,13 @@ public class ProfessorController {
     ) {
     }
 
-    @Introspected
+    @Serdeable.Serializable
     public record ErroApiResponse(
             String erro
     ) {
     }
 
-    @Introspected
+    @Serdeable.Serializable
     public record MensagemApiResponse(
             String mensagem
     ) {
