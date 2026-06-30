@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
@@ -27,6 +27,9 @@ type FormVantagem = {
   valorMoedas: string;
   quantidadeDisponivel: string;
 };
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 const ACCENT = "#C6F135";
 const ACCENT_MUTED = "rgba(198,241,53,0.12)";
@@ -260,7 +263,57 @@ function SectionHeader({
   );
 }
 
+function EmpresaLoading() {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#080B0F",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 16,
+      }}
+    >
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          border: `3px solid ${ACCENT_BORDER}`,
+          borderTopColor: ACCENT,
+          borderRadius: "50%",
+          animation: "spin 0.8s linear infinite",
+        }}
+      />
+
+      <p
+        style={{
+          color: "#4B5563",
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          margin: 0,
+        }}
+      >
+        Carregando painel da empresa...
+      </p>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
+
 export default function PainelEmpresa() {
+  return (
+    <Suspense fallback={<EmpresaLoading />}>
+      <PainelEmpresaContent />
+    </Suspense>
+  );
+}
+
+function PainelEmpresaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -311,10 +364,8 @@ export default function PainelEmpresa() {
       }
 
       const [empresas, vantagensCarregadas] = await Promise.all([
-        buscarJson<Empresa[]>("http://localhost:8080/empresas"),
-        buscarJson<Vantagem[]>(
-          `http://localhost:8080/vantagens/empresa/${empresaId}`
-        ),
+        buscarJson<Empresa[]>(`${API_URL}/empresas`),
+        buscarJson<Vantagem[]>(`${API_URL}/vantagens/empresa/${empresaId}`),
       ]);
 
       const empresaEncontrada = empresas.find(
@@ -381,7 +432,7 @@ export default function PainelEmpresa() {
     setSalvando(true);
 
     try {
-      const response = await fetch("http://localhost:8080/vantagens", {
+      const response = await fetch(`${API_URL}/vantagens`, {
         method: "POST",
         cache: "no-store",
         headers: {
@@ -413,7 +464,7 @@ export default function PainelEmpresa() {
         await carregarDados();
         setAbaAtiva("vantagens");
       } else {
-        toast.error(body.erro || "Erro ao cadastrar vantagem.");
+        toast.error(body.erro || body.message || "Erro ao cadastrar vantagem.");
       }
     } catch (error) {
       console.error("Erro ao cadastrar vantagem:", error);
@@ -431,13 +482,10 @@ export default function PainelEmpresa() {
     if (!confirmar) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/vantagens/${vantagemId}`,
-        {
-          method: "DELETE",
-          cache: "no-store",
-        }
-      );
+      const response = await fetch(`${API_URL}/vantagens/${vantagemId}`, {
+        method: "DELETE",
+        cache: "no-store",
+      });
 
       if (response.ok) {
         toast.success("Vantagem excluída com sucesso!");
@@ -482,45 +530,7 @@ export default function PainelEmpresa() {
   ).length;
 
   if (loading) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#080B0F",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 16,
-        }}
-      >
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            border: `3px solid ${ACCENT_BORDER}`,
-            borderTopColor: ACCENT,
-            borderRadius: "50%",
-            animation: "spin 0.8s linear infinite",
-          }}
-        />
-
-        <p
-          style={{
-            color: "#4B5563",
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            margin: 0,
-          }}
-        >
-          Carregando painel da empresa...
-        </p>
-
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+    return <EmpresaLoading />;
   }
 
   if (!empresa) {
